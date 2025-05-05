@@ -1,4 +1,4 @@
-import { Table, Column, Model, DataType, ForeignKey, BelongsTo, HasMany } from 'sequelize-typescript';
+import { Table, Column, Model, DataType, ForeignKey, BelongsTo, HasMany, AllowNull } from 'sequelize-typescript';
 import { User } from './User';
 import { Question } from './Question';
 import { Comment } from './Comment';
@@ -13,7 +13,8 @@ export class Answer extends Model {
   @Column({
     type: DataType.UUID,
     primaryKey: true,
-    defaultValue: v4()
+    defaultValue: v4(),
+    allowNull : false,
   })
   declare id: string;
 

@@ -2,6 +2,7 @@ import { Table, Column, Model, DataType, ForeignKey, BelongsTo } from 'sequelize
 import { User } from './User';
 import { Question } from './Question';
 import { Answer } from './Answer';
+import { v4 } from 'uuid';
 
 @Table({
   tableName: 'votes',
@@ -11,7 +12,8 @@ export class Vote extends Model {
   @Column({
     type: DataType.UUID,
     primaryKey: true,
-    defaultValue: v4()
+    defaultValue: v4(),
+    allowNull : false,
   })
   declare id: string;
 
