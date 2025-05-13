@@ -4,7 +4,8 @@ import { v4 } from 'uuid';
 
 @Table({
   tableName: 'tags',
-  timestamps: false
+  timestamps: false,
+  paranoid: true,
 })
 export class Tag extends Model {
   @Column({

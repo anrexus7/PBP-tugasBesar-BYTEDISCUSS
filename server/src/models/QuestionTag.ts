@@ -4,7 +4,8 @@ import { Tag } from './Tag';
 
 @Table({
   tableName: 'question_tags',
-  timestamps: false
+  timestamps: false,
+  paranoid: true,
 })
 export class QuestionTag extends Model {
   @PrimaryKey

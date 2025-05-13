@@ -7,7 +7,8 @@ import { v4 } from 'uuid';
 
 @Table({
   tableName: 'answers',
-  timestamps: true
+  timestamps: true,
+  paranoid: true,
 })
 export class Answer extends Model {
   @Column({

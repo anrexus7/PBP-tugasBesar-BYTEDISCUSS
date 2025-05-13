@@ -2,6 +2,19 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate, Outlet } from 'react-router-dom';
 import '../ProfilePage.css';
 
+
+interface Question {
+  id: number;
+  title: string;
+  createdAt: string;
+}
+
+interface Answer {
+  id: number;
+  content: string;
+  createdAt: string;
+}
+
 interface User {
   username: string;
   email: string;
@@ -101,7 +114,7 @@ const ProfilePage: React.FC = () => {
             <div
               className="profile-picture"
               style={{
-                backgroundImage: user.profilePicture ? `url(${user.profilePicture})` : 'none',
+                backgroundImage: user.profilePicture ? `url(http://localhost:5000/uploads/${user.profilePicture})` : 'none',
               }}
             />
             <div className="username">{user.username}</div>
@@ -114,7 +127,9 @@ const ProfilePage: React.FC = () => {
           <h3>Questions</h3>
           {user.questions.length > 0 ? (
             user.questions.map((q, idx) => (
-              <div key={idx} className="qa-item">{q}</div>
+              <div key={idx} className="qa-item">
+                {q.title} {/* Render the content of the question */}
+              </div>
             ))
           ) : (
             <p>No questions yet.</p>
@@ -125,7 +140,9 @@ const ProfilePage: React.FC = () => {
           <h3>Answers</h3>
           {user.answers.length > 0 ? (
             user.answers.map((a, idx) => (
-              <div key={idx} className="qa-item">{a}</div>
+              <div key={idx} className="qa-item">
+                {a.content} {/* Render the content of the answer */}
+              </div>
             ))
           ) : (
             <p>No answers yet.</p>

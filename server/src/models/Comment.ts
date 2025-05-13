@@ -6,7 +6,8 @@ import { v4 } from 'uuid';
 
 @Table({
   tableName: 'comments',
-  timestamps: true
+  timestamps: true,
+  paranoid: true,
 })
 export class Comment extends Model {
   @Column({

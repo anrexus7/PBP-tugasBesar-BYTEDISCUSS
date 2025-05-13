@@ -6,7 +6,8 @@ import { v4 } from 'uuid';
 
 @Table({
   tableName: 'votes',
-  timestamps: true
+  timestamps: true,
+  paranoid: true,
 })
 export class Vote extends Model {
   @Column({

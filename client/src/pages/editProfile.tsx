@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import '../app.css';
-import { useNavigate } from "react-router-dom";
+import { useNavigate } from 'react-router-dom';
+import ProfilePictureUploadModal from './editProfilePicture';
 
 const EditProfile: React.FC = () => {
   const [formData, setFormData] = useState({
@@ -9,26 +10,24 @@ const EditProfile: React.FC = () => {
     bio: '',
     currentPassword: '',
     newPassword: '',
+    profilePicture: '', // Add profile picture field
   });
 
-  const [originalData, setOriginalData] = useState({
-    email: '',
-    pass: '',
-  });
-
+  const [isModalOpen, setIsModalOpen] = useState(false);
   const [message, setMessage] = useState('');
   const [isError, setIsError] = useState(false);
   const navigate = useNavigate();
 
-  // Fetch current user data
+  const openModal = () => setIsModalOpen(true);
+  const closeModal = () => setIsModalOpen(false);
+
   useEffect(() => {
     const fetchUserData = async () => {
-      const token = localStorage.getItem('token'); // Retrieve token from localStorage
-
+      const token = localStorage.getItem('token');
       if (!token) {
         setMessage('No token found. Please log in.');
         setIsError(true);
-        navigate('/auth/login'); // Redirect to login if no token
+        navigate('/auth/login');
         return;
       }
 
@@ -53,11 +52,7 @@ const EditProfile: React.FC = () => {
           bio: data.bio || '',
           currentPassword: '',
           newPassword: '',
-        });
-
-        setOriginalData({
-          email: data.email || '',
-          pass: data.password || '',
+          profilePicture: data.profilePicture || '', // Set profile picture
         });
       } catch (err: any) {
         setMessage(err.message);
@@ -77,13 +72,11 @@ const EditProfile: React.FC = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-
-    const token = localStorage.getItem('token'); // Retrieve token from localStorage
-
+    const token = localStorage.getItem('token');
     if (!token) {
       setMessage('No token found. Please log in.');
       setIsError(true);
-      navigate('/auth/login'); // Redirect to login if no token
+      navigate('/auth/login');
       return;
     }
 
@@ -112,26 +105,13 @@ const EditProfile: React.FC = () => {
       const data = await response.json();
       setMessage(data.message || 'Profile updated successfully!');
       setIsError(false);
-
-      // Redirect to login if email or password was changed
-      if (
-        (formData.email !== '' && formData.email !== originalData.email) ||
-        (formData.newPassword !== '' && formData.newPassword !== originalData.pass)
-      ) {
-        setTimeout(() => {
-          localStorage.removeItem('token'); // Remove token from localStorage
-          navigate('/auth/login'); // Redirect to login after a delay
-        }, 2000); // Optional delay to show success message
-      } else {
-        navigate('/me'); // Redirect to profile page if no sensitive changes
-      }
+      navigate('/me');
     } catch (err: any) {
       setMessage(err.message);
       setIsError(true);
     }
   };
 
-  // Handle account deletion
   const handleDelete = async () => {
     const token = localStorage.getItem('token'); // Retrieve token from localStorage
 
@@ -170,11 +150,31 @@ const EditProfile: React.FC = () => {
     }
   };
 
+
   return (
     <div className="center-container">
       <button className="logout-button" onClick={handleDelete}>
         EXTERMINATE
       </button>
+      <div className="profile-picture-container" onClick={openModal}>
+        <img
+          src={`http://localhost:5000/uploads/${formData.profilePicture}` || '/default-avatar.png'}
+          alt="Profile"
+          className="profile-picture"
+        />
+        <p>Click to change profile picture</p>
+      </div>
+
+      <ProfilePictureUploadModal
+        isOpen={isModalOpen}
+        onClose={closeModal}
+        onUploadSuccess={(message) => {
+          setMessage(message);
+          setIsError(false);
+          // Optionally refresh profile picture
+        }}
+      />
+
       <h2>Edit Profile</h2>
       <div className="form-box">
         <form onSubmit={handleSubmit}>

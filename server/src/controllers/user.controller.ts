@@ -29,7 +29,7 @@ export const getCurrentUser = async (req: Request, res: Response) => {
       include: [
         {
           association: 'questions',
-          attributes: ['id', 'content', 'createdAt'],
+          attributes: ['id', 'title', 'createdAt'],
           limit: 5,
           order: [['createdAt', 'DESC']]
         },

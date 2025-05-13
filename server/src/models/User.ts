@@ -8,7 +8,8 @@ import { v4 } from 'uuid';
 
 @Table({
   tableName: 'users',
-  timestamps: true
+  timestamps: true,
+  paranoid: true,
 })
 export class User extends Model {
   @Column({

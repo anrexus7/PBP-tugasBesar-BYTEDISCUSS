@@ -10,7 +10,7 @@ export const register = async (req: Request, res: Response) => {
     
     // Check if user already exists
     const existingUser = await User.findOne({ where: { email } });
-    if (existingUser) {
+    if (existingUser && !existingUser.deletedAt) {
       res.status(400).json({ message: 'User already exists' });
       return 
     }
@@ -47,7 +47,7 @@ export const login = async (req: Request, res: Response) => {
     
     // Find user by email
     const user = await User.findOne({ where: { email } });
-    if (!user) {
+    if (!user || user.deletedAt) {
       res.status(400).json({ message: 'Invalid credentials' });
       return 
     }
