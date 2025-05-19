@@ -6,7 +6,7 @@ const Login: React.FC = () => {
   const [formData, setFormData] = useState({
     username: '',
     email: '',
-    password: '',
+    password: '', 
   });
   
   const [message, setMessage] = useState('');

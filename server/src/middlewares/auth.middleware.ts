@@ -8,17 +8,21 @@ export const authMiddleware = (
   res: Response,
   next: NextFunction
 ): void => {
-  const token = req.header('x-auth-token');
-  
-  if (!token) {
+  const authHeader = req.header('Authorization');
+
+  if (!authHeader || !authHeader.startsWith('Bearer ')) {
     res.status(401).json({ message: 'No token, authorization denied' });
     return;
   }
 
+  const token = authHeader.split(' ')[1]; // Ambil bagian setelah "Bearer "
+
   try {
-    const decoded = jwt.verify(token, jwtSecret) as { id: number };
-    // @ts-ignore
-    req.userId = decoded.id;
+    const decoded = jwt.verify(token, jwtSecret) as { id: string };
+    console.log('Decoded user ID:', decoded.id);
+    
+    // Simpan userId ke dalam req agar bisa diakses di controller
+    (req as any).userId = decoded.id;
     next();
   } catch (error) {
     res.status(401).json({ message: 'Token is not valid' });

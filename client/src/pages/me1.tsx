@@ -2,117 +2,106 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate, Outlet } from 'react-router-dom';
 import '../ProfilePage.css';
 
-interface Question {
-  id: number;
-  title: string;
-  createdAt: string;
-}
-
-interface Answer {
-  id: number;
-  content: string;
-  createdAt: string;
-}
-
 interface User {
-  id:string;
   username: string;
   email: string;
   profilePicture: string | null;
   bio: string | null;
   reputation: number;
-  questions: Question[];
-  answers: Answer[];
+  questions: string[];
+  answers: string[];
+  id: number; // penting agar bisa mengirim userId
 }
 
 const ProfilePage: React.FC = () => {
   const [user, setUser] = useState<User | null>(null);
   const [message, setMessage] = useState('');
+  const [isError, setIsError] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
     const fetchUser = async () => {
       const token = localStorage.getItem('token');
-
       if (!token) {
-        navigate('/auth/login');
+        setMessage('No token found. Please log in.');
+        setIsError(true);
         return;
       }
-
+  
       try {
-        const res = await fetch('http://localhost:5000/api/me', {
+        const res = await fetch('/api/me', {
           method: 'GET',
           headers: {
-            'Authorization': `Bearer ${token}`,
+            Authorization: `Bearer ${token}`,
             'Content-Type': 'application/json',
           },
         });
-
+  
         if (!res.ok) {
-          if (res.status === 401 || res.status === 403) {
-            navigate('/auth/login');
-            return;
-          }
-
-          const errorData = await res.json();
-          throw new Error(errorData.message || 'Failed to fetch user profile');
+          throw new Error('Unauthorized');
         }
-
-        const user = await res.json();
-        setUser(user);
+  
+        const data = await res.json();
+        setUser(data);
+        setIsError(false);
       } catch (err: any) {
-        setMessage(err.message);
-        navigate('/auth/login');
+        console.error(err);
+        setIsError(true);
       }
     };
-
+  
     fetchUser();
-  }, [navigate]);
+  }, []);
+  
+  useEffect(() => {
+    if (isError) {
+      navigate('/auth/login');
+    }
+  }, [isError]);
+  
 
-  if (!user) {
-    return (
-      <div className="center-container">
-        <p>Loading...</p>
-      </div>
-    );
-  }
-   
+  const handleLogout = () => {
+    localStorage.removeItem('token');
+    navigate('/auth/login');
+  };
+
+  const handleEditProfile = () => {
+    navigate('/editProfile');
+  };
+
   const handleCreateQuestion = () => {
     if (user) {
-      console.log('User ID:', user.id);
       navigate('/questions', { state: { userId: user.id } }); // kirim userId ke halaman buat pertanyaan
     }
   };
 
+  if (!user) {
+    navigate('/auth/login');
+    return (
+      <div className="center-container">
+        <p>Loading... Redirecting to login in 5 seconds.</p>
+      </div>
+    );
+  }
+
   return (
     <div className="center-container">
-      <button
-        className="logout-button"
-        onClick={() => {
-          localStorage.removeItem('token');
-          navigate('/auth/login');
-        }}
-      >
-        LOG OUT
-      </button>
-
+      <button className='logout-button' onClick={handleLogout}> LOG OUT </button>
       <div className="profile-box">
         <div className="profile-header">
           <div className="profile-info">
             <p><strong>Bio:</strong> {user.bio || 'No bio yet.'}</p>
             <p><strong>Reputation:</strong> {user.reputation}</p>
-          </div> 
+          </div>
           <div className="profile-picture-section">
             <div
               className="profile-picture"
               style={{
-                backgroundImage: user.profilePicture
-                  ? `url(http://localhost:5000/uploads/${user.profilePicture})`
-                  : 'none',
+                backgroundImage: user.profilePicture ? `url(${user.profilePicture})` : 'none',
               }}
             />
             <div className="username">{user.username}</div>
-            <button onClick={() => navigate('/editProfile')}>Edit</button>
+            <button onClick={handleEditProfile}>Edit</button>
             <Outlet />
           </div>
         </div>
@@ -120,10 +109,8 @@ const ProfilePage: React.FC = () => {
         <div className="qa-section">
           <h3>Questions</h3>
           {user.questions.length > 0 ? (
-            user.questions.map((q) => (
-              <div key={q.id} className="qa-item">
-                {q.title}
-              </div>
+            user.questions.map((q, idx) => (
+              <div key={idx} className="qa-item">{q}</div>
             ))
           ) : (
             <p>No questions yet.</p>
@@ -133,10 +120,8 @@ const ProfilePage: React.FC = () => {
         <div className="qa-section">
           <h3>Answers</h3>
           {user.answers.length > 0 ? (
-            user.answers.map((a) => (
-              <div key={a.id} className="qa-item">
-                {a.content}
-              </div>
+            user.answers.map((a, idx) => (
+              <div key={idx} className="qa-item">{a}</div>
             ))
           ) : (
             <p>No answers yet.</p>
@@ -148,7 +133,9 @@ const ProfilePage: React.FC = () => {
         </div>
 
         {message && (
-          <p className="error-message">{message}</p>
+          <p className={isError ? 'error-message' : 'success-message'}>
+            {message}
+          </p>
         )}
       </div>
     </div>

@@ -1,12 +1,19 @@
 import express from 'express';
 import cors from 'cors';
-import sequelize from './config/database';
+import sequelize from './config/database'; 
 import authRoutes from './routes/auth.routes';
 import userRoutes from './routes/user.routes';
+import questionAnswerRoutes from './routes/question_answer.routes';
 const app = express();
 
 // Middleware
-app.use(cors());
+app.use(cors(
+  {
+    origin: 'http://localhost:5173',
+    methods: ['GET', 'POST', 'PUT', 'DELETE'],
+    credentials: true,
+  }
+));
 app.use(express.json());
 // app.use(sessionMiddleware);
 app.use('/uploads', express.static('uploads'));
@@ -14,7 +21,9 @@ app.use('/uploads', express.static('uploads'));
 // Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/', userRoutes);
+app.use('/api', questionAnswerRoutes);
 
+app.listen(3000, () => console.log('Server berjalan di port 3000'));
 
 // Database connection
 sequelize.sync({ force: false }).then(() => {

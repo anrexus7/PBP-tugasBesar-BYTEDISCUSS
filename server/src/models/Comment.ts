@@ -55,5 +55,4 @@ export class Comment extends Model {
 
   @BelongsTo(() => Answer)
   declare answer: Answer | null;
-
 }

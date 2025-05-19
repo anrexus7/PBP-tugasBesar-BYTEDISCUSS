@@ -3,6 +3,7 @@ import Login from "../pages/login";
 import Register from "../pages/register";
 import Me from "../pages/me";
 import EditProfile from "../pages/editProfile";
+import QuestionPage from "../pages/question_answer";
 
 export const router = createBrowserRouter([
   {
@@ -29,5 +30,9 @@ export const router = createBrowserRouter([
     {
         path : "/editProfile",
         element : <EditProfile />,
+    },
+    {
+      path: "/questions",
+      element: <QuestionPage />, 
     },
 ]);

@@ -1,0 +1,9 @@
+{
+  "development": {
+    "username": "postgres",
+    "password": "iniian681",
+    "database": "stackoverflow_clone",
+    "host": "127.0.0.1",
+    "dialect": "postgres"
+  }
+}
