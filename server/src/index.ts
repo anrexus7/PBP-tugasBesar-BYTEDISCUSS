@@ -3,6 +3,7 @@ import cors from 'cors';
 import sequelize from './config/database';
 import authRoutes from './routes/auth.routes';
 import userRoutes from './routes/user.routes';
+import searchRoutes from './routes/search.routes';
 const app = express();
 
 // Middleware
@@ -14,6 +15,7 @@ app.use('/uploads', express.static('uploads'));
 // Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/', userRoutes);
+app.use('/api/search', searchRoutes);
 
 
 // Database connection

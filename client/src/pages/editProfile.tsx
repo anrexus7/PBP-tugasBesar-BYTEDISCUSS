@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import '../app.css';
+import '../css/app.css';
 import { useNavigate } from 'react-router-dom';
 import ProfilePictureUploadModal from './editProfilePicture';
 
@@ -150,6 +150,12 @@ const EditProfile: React.FC = () => {
     }
   };
 
+  const handleProfilePictureUpdate = (newProfilePicture: string) => {
+    setFormData(prevData => ({
+      ...prevData,
+      profilePicture: newProfilePicture
+    }));
+  };
 
   return (
     <div className="center-container">
@@ -158,7 +164,9 @@ const EditProfile: React.FC = () => {
       </button>
       <div className="profile-picture-container" onClick={openModal}>
         <img
-          src={`http://localhost:5000/uploads/${formData.profilePicture}` || '/default-avatar.png'}
+          src={formData.profilePicture ? 
+            `http://localhost:5000/uploads/${formData.profilePicture}` : 
+            '/default-avatar.png'}
           alt="Profile"
           className="profile-picture"
         />
@@ -168,10 +176,10 @@ const EditProfile: React.FC = () => {
       <ProfilePictureUploadModal
         isOpen={isModalOpen}
         onClose={closeModal}
-        onUploadSuccess={(message) => {
+        onUploadSuccess={(message, profilePicture) => {
           setMessage(message);
           setIsError(false);
-          // Optionally refresh profile picture
+          handleProfilePictureUpdate(profilePicture);
         }}
       />
 

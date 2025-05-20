@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import '../app.css'
-import { Link, useNavigate } from "react-router-dom";
+import '../css/App.css'
+import {useNavigate } from "react-router-dom";
 
 const Login: React.FC = () => {
   const [formData, setFormData] = useState({
@@ -27,6 +27,8 @@ const Login: React.FC = () => {
     });
   };
 
+  const { email, password } = formData;
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -36,7 +38,7 @@ const Login: React.FC = () => {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(formData),
+        body: JSON.stringify({ email, password }),
       });
 
       if (!response.ok) {
@@ -87,7 +89,7 @@ const Login: React.FC = () => {
             required
           />
           <button type="submit">Login</button>
-          <p>Don't have an account? <Link to='/auth/register'> Register </Link></p>
+          <p onClick={() => navigate(`/auth/register`)}>Don't have an account? Register </p>
         </form>
         {message && (
         <p className={isError ? "error-message" : "success-message"}>

@@ -1,10 +1,10 @@
 import React, { useState } from 'react';
-import '../ProfilePictureUploadModal.css'; // Assuming you will create a CSS file for modal styling
+import '../css/ProfilePictureUploadModal.css';
 
 interface ProfilePictureUploadModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onUploadSuccess: (message: string) => void;
+  onUploadSuccess: (message: string, profilePicture: string) => void;
 }
 
 const ProfilePictureUploadModal: React.FC<ProfilePictureUploadModalProps> = ({ isOpen, onClose, onUploadSuccess }) => {
@@ -52,7 +52,7 @@ const ProfilePictureUploadModal: React.FC<ProfilePictureUploadModalProps> = ({ i
       }
 
       const data = await response.json();
-      onUploadSuccess(data.message);
+      onUploadSuccess(data.message, data.profilePicture);
       onClose(); // Close the modal after successful upload
     } catch (err: any) {
       setMessage(err.message);
@@ -66,9 +66,11 @@ const ProfilePictureUploadModal: React.FC<ProfilePictureUploadModalProps> = ({ i
     <div className="modal-overlay">
       <div className="modal-content">
         <h2>Upload Profile Picture</h2>
-        <input type="file" accept="image/*" onChange={handleFileChange} />
-        <button onClick={handleUpload}>Upload</button>
-        <button onClick={onClose}>Cancel</button>
+        <div className="upload-controls">
+          <input type="file" accept="image/*" onChange={handleFileChange} />
+          <button className="upload-button" onClick={handleUpload}>Upload</button>
+          <button className="cancel-button" onClick={onClose}>Cancel</button>
+        </div>
         {message && (
           <p className={isError ? 'error-message' : 'success-message'}>
             {message}

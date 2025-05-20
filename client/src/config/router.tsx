@@ -2,12 +2,13 @@ import { createBrowserRouter, Navigate } from "react-router-dom";
 import Login from "../pages/login";
 import Register from "../pages/register";
 import Me from "../pages/me";
+import Home from "../pages/home";
 import EditProfile from "../pages/editProfile";
 
 export const router = createBrowserRouter([
   {
     path: "/",
-    element: <Navigate to="/auth/login" replace />, // Redirect to login by default
+    element: <Navigate to="/Home" replace />, // Redirect to login by default
   },
   {
     path: "/auth",
@@ -30,4 +31,10 @@ export const router = createBrowserRouter([
         path : "/editProfile",
         element : <EditProfile />,
     },
+    {
+        path : "/Home",
+        element : <Home />,
+    },
+    {
+    }
 ]);

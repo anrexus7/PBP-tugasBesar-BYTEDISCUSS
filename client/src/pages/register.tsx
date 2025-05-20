@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import '../app.css';
+import '../css/app.css';
 import { Link, useNavigate } from "react-router-dom";
 
 const Register: React.FC = () => {
@@ -87,7 +87,7 @@ const Register: React.FC = () => {
             required
           />
           <button type="submit">Register</button>
-          <p>Already have an account? <Link to="/auth/login">Login </Link></p>
+          <p onClick={() => navigate(`/auth/login`)}>Already have an account? Login </p>
         </form>
         {message && (
           <p className={isError ? "error-message" : "success-message"}>
