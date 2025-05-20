@@ -59,7 +59,7 @@ export const getQuestionById = async (req: Request, res: Response) : Promise<voi
   }
 };
 
-// POST /questions
+// POST /questions/new
 export const createQuestion = async (req: Request, res: Response): Promise<void> => {
   try {
     
@@ -144,23 +144,28 @@ export const deleteQuestion = async (req: Request, res: Response)  : Promise<voi
 // POST /questions/:questionId/answers
 export const postAnswer = async (req: Request, res: Response) : Promise<void> =>  {
   try {
-    const { content, userId } = req.body;
+    const { content } = req.body;
     const { questionId } = req.params;
 
-    if (!content || !userId) {
+    if (!content) {
       res.status(400).json({ error: 'Data tidak lengkap.' });
     }
 
-    const answer = await Answer.create({
-      content,
-      userId,
+    const userId = (req as any).userId;
+    console.log('User ID:', userId);
+    if (!userId) {
+      res.status(401).json({ message: 'Unauthorized' });
+      return;
+    }
+
+    const answer = await Answer.create({ 
+      id: uuidv4(),
+      content, 
+      userId, 
       questionId,
       isAccepted: false
-    });
-
-    const answerWithUser = await Answer.findByPk(answer.id, {
-      include: [User]
-    });
+     });
+    const answerWithUser = await Answer.findByPk(answer.id, { include: [User] });
 
     res.status(201).json(answerWithUser);
   } catch (err) {
@@ -174,18 +179,26 @@ export const updateAnswer = async (req: Request, res: Response)  : Promise<void>
   try {
     const { content } = req.body;
     const answer = await Answer.findByPk(req.params.id);
+    
+    // const userId = (req as any).userId;
+    // console.log('User ID:', userId);
+    // if (!userId) {
+    //   res.status(401).json({ message: 'Unauthorized' });
+    //   return;
+    // }
 
-    if (answer) {
-      await answer.update({ content });
-  
-      const updatedAnswer = await Answer.findByPk(answer.id, {
-        include: [User]
-      });
-  
-      res.json(updatedAnswer);
+    // if (answer.userId !== req.user.id) {
+    //   res.status(403).json({ error: 'Tidak diizinkan.' });
+    // }
+
+    if (!answer) {
+      res.status(404).json({ error: 'Jawaban tidak ditemukan.' });
+      return; // Stop eksekusi
     }
-    res.status(404).json({ error: 'Jawaban tidak ditemukan.' });
 
+    await answer.update({ content });
+    const updatedAnswer = await Answer.findByPk(answer.id, { include: [User] });
+    res.json(updatedAnswer);
   } catch (err) {
     console.error('Error updating answer:', err);
     res.status(500).json({ error: 'Gagal memperbarui jawaban.' });

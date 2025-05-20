@@ -15,7 +15,7 @@ const router = express.Router();
 
 router.get('/questions', authMiddleware, getAllQuestions);
 router.get('/questions/:id', authMiddleware, getQuestionById);
-router.post('/questions', authMiddleware,  createQuestion);
+router.post('/questions/new', authMiddleware,  createQuestion);
 router.put('/questions/:id', authMiddleware, updateQuestion);
 router.delete('/questions/:id', authMiddleware, deleteQuestion);
 router.post('/questions/:questionId/answers', authMiddleware, postAnswer);

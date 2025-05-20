@@ -22,30 +22,6 @@ const QuestionPage: React.FC = () => {
   const [newQuestion, setNewQuestion] = useState({ title: '', content: '' });
   const navigate = useNavigate();
 
-  useEffect(() => {
-    fetchQuestions();
-  }, []);
-
-  const fetchQuestions = async () => {
-    try {
-      const res = await fetch('http://localhost:5000/api/questions',
-        {
-          method: 'GET',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${localStorage.getItem('token')}`,
-          },
-        }
-      );
-      console.log(res);
-      const data = await res.json();
-      console.log(data);
-      setQuestions(data);
-    } catch (err) {
-      setError('Gagal mengambil data pertanyaan.');
-    }
-  };
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
@@ -55,7 +31,7 @@ const QuestionPage: React.FC = () => {
       const token = localStorage.getItem('token');
       
       console.log('Token:', token);
-      const res = await fetch('http://localhost:5000/api/questions', {
+      const res = await fetch('http://localhost:5000/api/questions/new', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -68,11 +44,74 @@ const QuestionPage: React.FC = () => {
 
       setSuccess('Pertanyaan berhasil ditambahkan.');
       setNewQuestion({ title: '', content: '' });
-      fetchQuestions();
+      // fetchQuestions();
     } catch (err) {
       setError('Gagal menambahkan question.');
     }
   };
+
+  const handleEdit = (question: Question) => {
+  setEditingQuestionId(question.id);
+  setEditedQuestion({ title: question.title, content: question.content });
+};
+
+const handleUpdate = async () => {
+  const token = localStorage.getItem('token');
+  try {
+    const res = await fetch(`http://localhost:5000/api/questions/${editingQuestionId}`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`,
+      },
+      body: JSON.stringify(editedQuestion),
+    });
+
+    if (!res.ok) throw new Error('Gagal update pertanyaan.');
+    setEditingQuestionId(null);
+    setEditedQuestion({ title: '', content: '' });
+    fetchQuestions();
+  } catch (err) {
+    console.error(err);
+    setError('Gagal mengedit pertanyaan.');
+  }
+};
+
+const handleDelete = async (id: string) => {
+  const token = localStorage.getItem('token');
+  try {
+    const res = await fetch(`http://localhost:5000/api/questions/${id}`, {
+      method: 'DELETE',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+      },
+    });
+
+    if (!res.ok) throw new Error('Gagal hapus pertanyaan.');
+    fetchQuestions();
+  } catch (err) {
+    console.error(err);
+    setError('Gagal menghapus pertanyaan.');
+  }
+};
+
+  const fetchQuestions = async () => {
+  const token = localStorage.getItem('token');
+  try {
+    const res = await fetch('http://localhost:5000/api/questions', {
+      headers: { 'Authorization': `Bearer ${token}` }
+    });
+    const data = await res.json();
+    setQuestions(data);
+  } catch (err) {
+    setError('Gagal memuat pertanyaan.');
+  }
+};
+
+useEffect(() => {
+  fetchQuestions();
+}, []);
+
 
   return (
     <div className="center-container">

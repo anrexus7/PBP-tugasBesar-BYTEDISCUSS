@@ -80,6 +80,13 @@ const ProfilePage: React.FC = () => {
   const handleCreateQuestion = () => {
     if (user) {
       console.log('User ID:', user.id);
+      navigate('/questions/new', { state: { userId: user.id } }); // kirim userId ke halaman buat pertanyaan
+    }
+  };
+
+  const handleCreateAnswer = () => {
+    if (user) {
+      console.log('User ID:', user.id);
       navigate('/questions', { state: { userId: user.id } }); // kirim userId ke halaman buat pertanyaan
     }
   };
@@ -119,7 +126,7 @@ const ProfilePage: React.FC = () => {
 
         <div className="qa-section">
           <h3>Questions</h3>
-          {user.questions.length > 0 ? (
+          {/* {user.questions.length > 0 ? (
             user.questions.map((q) => (
               <div key={q.id} className="qa-item">
                 {q.title}
@@ -127,12 +134,15 @@ const ProfilePage: React.FC = () => {
             ))
           ) : (
             <p>No questions yet.</p>
-          )}
+          )} */}
+        </div>
+        <div style={{ marginTop: '20px' }}>
+          <button onClick={handleCreateQuestion}>Buat Pertanyaan</button>
         </div>
 
         <div className="qa-section">
           <h3>Answers</h3>
-          {user.answers.length > 0 ? (
+          {/* {user.answers.length > 0 ? (
             user.answers.map((a) => (
               <div key={a.id} className="qa-item">
                 {a.content}
@@ -140,11 +150,10 @@ const ProfilePage: React.FC = () => {
             ))
           ) : (
             <p>No answers yet.</p>
-          )}
+          )} */}
         </div>
-
         <div style={{ marginTop: '20px' }}>
-          <button onClick={handleCreateQuestion}>Buat Pertanyaan</button>
+          <button onClick={handleCreateAnswer}>Jawab Pertanyaan</button>
         </div>
 
         {message && (

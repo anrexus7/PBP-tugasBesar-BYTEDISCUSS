@@ -3,7 +3,9 @@ import Login from "../pages/login";
 import Register from "../pages/register";
 import Me from "../pages/me";
 import EditProfile from "../pages/editProfile";
-import QuestionPage from "../pages/question_answer";
+import QuestionPage from "../pages/question";
+import QuestionList from "../pages/questionList";
+import AnswerPage from "../pages/answer";
 
 export const router = createBrowserRouter([
   {
@@ -23,16 +25,24 @@ export const router = createBrowserRouter([
       },
     ],
   },
-    {
-        path : "/me",
-        element : <Me />,
-    },
-    {
-        path : "/editProfile",
-        element : <EditProfile />,
-    },
-    {
-      path: "/questions",
-      element: <QuestionPage />, 
-    },
+  {
+      path : "/me",
+      element : <Me />,
+  },
+  {
+      path : "/editProfile",
+      element : <EditProfile />,
+  },
+  {
+    path: "/questions",
+    element: <QuestionList />,
+  },
+  {
+    path: "/questions/new",
+    element: <QuestionPage />, 
+  },
+  {
+    path: "/questions/:id", // detail per pertanyaan
+    element: <AnswerPage />,
+  },
 ]);

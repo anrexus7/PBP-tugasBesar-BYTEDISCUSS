@@ -8,7 +8,7 @@ type Answer = {
   User?: {
     name?: string;
   };
-isAccepted: boolean;
+  isAccepted: boolean;
 };
 
 type Question = {
@@ -19,49 +19,61 @@ type Question = {
   answers: Answer[];
 };
 
-function QuestionDetail() {
+const AnswerPage: React.FC = () => {
   const { id } = useParams();
   const [question, setQuestion] = useState<Question | null>(null);
   const [newAnswer, setNewAnswer] = useState('');
-  const [editingAnswerId, setEditingAnswerId] = useState<number | null>(null);
+  const [editingAnswerId, setEditingAnswerId] = useState<string | null>(null);
   const [editedContent, setEditedContent] = useState('');
 
-  const token = localStorage.getItem('token'); // diasumsikan user sudah login dan token tersimpan
+  const token = localStorage.getItem('token'); 
 
   useEffect(() => {
-    fetch(`http://localhost:5000/api/questions/${id}`, {
-      headers: { Authorization: `Bearer ${token}` }
+    fetch(`http://localhost:5000/api/questions/${id}/`, {
+      headers: { 
+        Authorization: `Bearer ${localStorage.getItem('token')}` }
     })
-      .then(res => res.json())
-      .then(data => setQuestion(data));
+    .then(res => res.json())
+    .then(data => setQuestion(data));
   }, [id]);
 
   const handlePostAnswer = async () => {
-    const userId = localStorage.getItem('userId'); // sesuaikan penyimpanan
-    if (!newAnswer || !userId) return;
+  if (!newAnswer) return;
 
-    const res = await fetch(`http://localhost:5000/api/questions/${id}/answers`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${token}`
-      },
-      body: JSON.stringify({ content: newAnswer, userId })
-    });
-    const data = await res.json();
-    setQuestion(prev => {
-    if (!prev) return prev; // jika null, tidak lakukan apa-apa
+  const res = await fetch(`http://localhost:5000/api/questions/${id}/answers`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${localStorage.getItem('token')}`
+    },
+    body: JSON.stringify({ content: newAnswer }) 
+  });
+
+  const data = await res.json();
+
+  if (!res.ok) {
+    alert(data.error || 'Gagal mengirim jawaban.');
+    return;
+  }
+
+  setQuestion(prev => {
+    if (!prev) return prev;
     return {
-        ...prev,
-        answers: [...(prev.answers || []), data]
+      ...prev,
+      answers: [...(prev.answers || []), data]
     };
-    });
-  };
+  });
 
-  const handleDeleteAnswer = async () => {
+  setNewAnswer(""); // reset input
+};
+
+
+  const handleDeleteAnswer = async (answerId: string) => {
     await fetch(`http://localhost:5000/api/answers/${answerId}`, {
       method: 'DELETE',
-      headers: { Authorization: `Bearer ${token}` }
+      headers: { 
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${localStorage.getItem('token')}` }
     });
     setQuestion(prev => {
     if (!prev) return prev;
@@ -78,7 +90,7 @@ function QuestionDetail() {
       method: 'PUT',
       headers: {
         'Content-Type': 'application/json',
-        Authorization: `Bearer ${token}`
+        'Authorization': `Bearer ${token}`
       },
       body: JSON.stringify({ content: editedContent })
     });
@@ -117,7 +129,7 @@ function QuestionDetail() {
             ) : (
               <>
                 <p>{ans.content}</p>
-                <small>oleh {ans.User?.username || 'Anonim'}</small>
+                <small>oleh {ans.User?.name || 'Anonim'}</small>
                 <div className="actions">
                   <button onClick={() => {
                     setEditingAnswerId(ans.id);
@@ -143,4 +155,4 @@ function QuestionDetail() {
   );
 }
 
-export default QuestionDetail;
+export default AnswerPage;
