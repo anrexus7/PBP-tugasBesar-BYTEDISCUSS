@@ -25,7 +25,7 @@ const Register: React.FC = () => {
   useEffect(() => {
     const token = localStorage.getItem('token');
     if (token) {
-      navigate('/dashboard');
+      navigate('/mainPage');
     }
   }, [navigate]);
 

@@ -1,13 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { FaSearch, FaUser, FaSignInAlt, FaUserPlus, FaThumbsUp, FaThumbsDown, FaComment } from 'react-icons/fa';
+import { FaSearch, FaSignInAlt, FaUserPlus, FaThumbsUp, FaThumbsDown, FaComment, FaUser, FaEdit, FaSignOutAlt } from 'react-icons/fa';
 import '../css/mainPage.css';
 
 interface Question {
   id: string;
   title: string;
   content: string;
-  tags: string[];
+  tags: { id: string; name: string }[];
   viewCount: number;
   answerCount: number;
   voteCount: number;
@@ -15,7 +15,12 @@ interface Question {
   hasAcceptedAnswer?: boolean;
   User: {
     username: string;
+    profilePicture?: string;
   };
+  votes?: {
+    value: number;
+    userId: string;
+  }[];
 }
 
 const MainPage: React.FC = () => {
@@ -23,28 +28,49 @@ const MainPage: React.FC = () => {
   const [filteredQuestions, setFilteredQuestions] = useState<Question[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedTag, setSelectedTag] = useState('');
-  const [tags, setTags] = useState<string[]>([]);
+  const [tags, setTags] = useState<{ id: string; name: string }[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState('');
+  const [showProfileDropdown, setShowProfileDropdown] = useState(false);
   const navigate = useNavigate();
   const isLoggedIn = !!localStorage.getItem('token');
+  const [userVotes, setUserVotes] = useState<Record<string, number>>({});
 
   useEffect(() => {
     const fetchQuestions = async () => {
       try {
+        const token = localStorage.getItem('token');
         const res = await fetch('http://localhost:5000/api/questions', {
           headers: {
-            'Authorization': `Bearer ${localStorage.getItem('token')}`,
+            'Authorization': `Bearer ${token}`,
           },
         });
         const data = await res.json();
         setQuestions(data);
         setFilteredQuestions(data);
         
-        // Extract unique tags from all questions
         const allTags = data.flatMap((q: Question) => q.tags || []);
-        const uniqueTags = Array.from(new Set(allTags));
-        setTags(uniqueTags as string[] || []);
+        const uniqueTags = Array.from(new Set(allTags.map(tag => tag.id)))
+          .map(id => allTags.find(tag => tag.id === id));
+        setTags(uniqueTags);
+
+        if (token) {
+          const voteRes = await fetch('http://localhost:5000/api/votes', {
+            headers: {
+              'Authorization': `Bearer ${token}`,
+            },
+          });
+          const votesData = await voteRes.json();
+          
+          const votesMap: Record<string, number> = {};
+          data.forEach((q: Question) => {
+            const userVote = votesData.votes?.find((v: any) => v.questionId === q.id);
+            if (userVote) {
+              votesMap[q.id] = userVote.value;
+            }
+          });
+          setUserVotes(votesMap);
+        }
       } catch (err) {
         setError('Failed to fetch questions. Please try again later.');
       } finally {
@@ -67,7 +93,7 @@ const MainPage: React.FC = () => {
     
     if (selectedTag) {
       results = results.filter(q => 
-        q.tags && q.tags.includes(selectedTag)
+        q.tags && q.tags.some(tag => tag.id === selectedTag)
       );
     }
     
@@ -81,20 +107,31 @@ const MainPage: React.FC = () => {
     }
 
     try {
+      const token = localStorage.getItem('token');
       const res = await fetch(`http://localhost:5000/api/questions/${questionId}/vote`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('token')}`,
+          'Authorization': `Bearer ${token}`,
         },
         body: JSON.stringify({ value }),
       });
 
       if (res.ok) {
         const updatedQuestion = await res.json();
+        
         setQuestions(questions.map(q => 
           q.id === questionId ? updatedQuestion : q
         ));
+        
+        setUserVotes(prev => {
+          if (prev[questionId] === value) {
+            const newVotes = {...prev};
+            delete newVotes[questionId];
+            return newVotes;
+          }
+          return {...prev, [questionId]: value};
+        });
       }
     } catch (err) {
       console.error('Failed to vote', err);
@@ -110,6 +147,11 @@ const MainPage: React.FC = () => {
       hour: '2-digit',
       minute: '2-digit'
     });
+  };
+
+  const handleLogout = () => {
+    localStorage.removeItem('token');
+    navigate('/auth/login');
   };
 
   if (isLoading) return (
@@ -143,9 +185,29 @@ const MainPage: React.FC = () => {
         
         <div className="auth-buttons">
           {isLoggedIn ? (
-            <Link to="/me" className="profile-button">
-              <FaUser /> Profile
-            </Link>
+            <div 
+              className="profile-dropdown-container"
+              onMouseEnter={() => setShowProfileDropdown(true)}
+              onMouseLeave={() => setShowProfileDropdown(false)}
+            >
+              <div className="profile-button">
+                <img 
+                  src="/default-profile.png" 
+                  alt="Profile" 
+                  className="profile-picture"
+                />
+              </div>
+              {showProfileDropdown && (
+                <div className="profile-dropdown">
+                  <Link to="/me" className="dropdown-item">
+                    <FaEdit /> Edit Profile
+                  </Link>
+                  <button onClick={handleLogout} className="dropdown-item">
+                    <FaSignOutAlt /> Logout
+                  </button>
+                </div>
+              )}
+            </div>
           ) : (
             <>
               <Link to="/auth/login" className="login-button">
@@ -160,18 +222,18 @@ const MainPage: React.FC = () => {
       </header>
 
       <div className="main-content">
-        <div className="sidebar">
+        <div className="sidebar-fixed">
           <div className="sidebar-section">
             <h3>Browse Tags</h3>
             <div className="tags-list">
               {tags.length > 0 ? (
                 tags.map(tag => (
                   <button
-                    key={tag}
-                    className={`tag ${selectedTag === tag ? 'active' : ''}`}
-                    onClick={() => setSelectedTag(selectedTag === tag ? '' : tag)}
+                    key={tag.id}
+                    className={`tag ${selectedTag === tag.id ? 'active' : ''}`}
+                    onClick={() => setSelectedTag(selectedTag === tag.id ? '' : tag.id)}
                   >
-                    {tag}
+                    {tag.name}
                   </button>
                 ))
               ) : (
@@ -191,7 +253,7 @@ const MainPage: React.FC = () => {
 
         <div className="questions-list">
           <div className="questions-header">
-            <h1>{selectedTag ? `Questions tagged [${selectedTag}]` : 'All Questions'}</h1>
+            <h1>{selectedTag ? `Questions tagged [${tags.find(t => t.id === selectedTag)?.name}]` : 'All Questions'}</h1>
             <p>{filteredQuestions.length} {filteredQuestions.length === 1 ? 'question' : 'questions'}</p>
           </div>
 
@@ -208,9 +270,24 @@ const MainPage: React.FC = () => {
             filteredQuestions.map(question => (
               <div key={question.id} className="question-card">
                 <div className="question-stats">
-                  <div className="stat">
-                    <span>{question.voteCount}</span>
-                    <span>votes</span>
+                  <div className="vote-container">
+                    <button 
+                      className={`vote-button ${userVotes[question.id] === 1 ? 'active upvote' : 'upvote'}`}
+                      onClick={() => handleVote(question.id, 1)}
+                      aria-label="Upvote"
+                    >
+                      <FaThumbsUp />
+                      <span>Upvote</span>
+                    </button>
+                    <span className="vote-count">{question.voteCount}</span>
+                    <button 
+                      className={`vote-button ${userVotes[question.id] === -1 ? 'active downvote' : 'downvote'}`}
+                      onClick={() => handleVote(question.id, -1)}
+                      aria-label="Downvote"
+                    >
+                      <FaThumbsDown />
+                      <span>Downvote</span>
+                    </button>
                   </div>
                   <div className={`stat ${question.answerCount > 0 ? question.hasAcceptedAnswer ? 'has-accepted' : 'has-answers' : ''}`}>
                     <span>{question.answerCount}</span>
@@ -235,8 +312,8 @@ const MainPage: React.FC = () => {
                   <div className="question-footer">
                     <div className="tags">
                       {question.tags?.map(tag => (
-                        <span key={tag} className="tag" onClick={() => setSelectedTag(tag)}>
-                          {tag}
+                        <span key={tag.id} className="tag" onClick={() => setSelectedTag(tag.id)}>
+                          {tag.name}
                         </span>
                       ))}
                     </div>
@@ -249,27 +326,6 @@ const MainPage: React.FC = () => {
                         asked {formatDate(question.createdAt)}
                       </span>
                     </div>
-                  </div>
-                  
-                  <div className="question-actions">
-                    <button 
-                      className="vote-button upvote"
-                      onClick={() => handleVote(question.id, 1)}
-                    >
-                      <FaThumbsUp /> Upvote
-                    </button>
-                    <button 
-                      className="vote-button downvote"
-                      onClick={() => handleVote(question.id, -1)}
-                    >
-                      <FaThumbsDown /> Downvote
-                    </button>
-                    <Link 
-                      to={`/questions/${question.id}`}
-                      className="comment-button"
-                    >
-                      <FaComment /> {question.answerCount} {question.answerCount === 1 ? 'Answer' : 'Answers'}
-                    </Link>
                   </div>
                 </div>
               </div>

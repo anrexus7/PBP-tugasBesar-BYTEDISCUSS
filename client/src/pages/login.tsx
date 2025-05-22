@@ -3,6 +3,8 @@ import '../css/login.css';
 import { Link, useNavigate } from "react-router-dom";
 import { FaLock, FaEnvelope, FaEye, FaEyeSlash } from 'react-icons/fa';
 
+
+
 const Login: React.FC = () => {
   const [formData, setFormData] = useState({
     email: '',
@@ -23,7 +25,7 @@ const Login: React.FC = () => {
   useEffect(() => {
     const token = localStorage.getItem('token');
     if (token) {
-      navigate('/auth/login');
+      navigate('/mainPage');
     }
   }, [navigate]);
 
@@ -199,7 +201,7 @@ const Login: React.FC = () => {
           )}
 
           <div className="login-footer">
-            <p>Don't have an account? <Link to="../register">Sign up</Link></p>
+            <p>Don't have an account? <Link to="/auth/register">Sign up</Link></p>
           </div>
         </form>
       </div>
