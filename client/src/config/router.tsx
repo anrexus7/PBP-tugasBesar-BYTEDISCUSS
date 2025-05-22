@@ -6,6 +6,7 @@ import EditProfile from "../pages/editProfile";
 import QuestionPage from "../pages/question";
 import QuestionList from "../pages/questionList";
 import AnswerPage from "../pages/answer";
+import MainPage from "../pages/mainPage";
 
 export const router = createBrowserRouter([
   {
@@ -44,5 +45,9 @@ export const router = createBrowserRouter([
   {
     path: "/questions/:id", // detail per pertanyaan
     element: <AnswerPage />,
+  },
+  {
+    path: "/mainPage",
+    element: <MainPage />,
   },
 ]);

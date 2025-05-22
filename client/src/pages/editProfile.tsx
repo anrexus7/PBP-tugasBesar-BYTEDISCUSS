@@ -36,7 +36,7 @@ const EditProfile: React.FC = () => {
         const response = await fetch('http://localhost:5000/api/me', {
           method: 'GET',
           headers: {
-            'x-auth-token': token,
+            'Authorization': `Bearer ${token}`,
             'Content-Type': 'application/json',
           },
         });
@@ -91,7 +91,7 @@ const EditProfile: React.FC = () => {
       const response = await fetch('http://localhost:5000/api/me', {
         method: 'PUT',
         headers: {
-          'x-auth-token': token,
+          'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
@@ -146,7 +146,7 @@ const EditProfile: React.FC = () => {
       const response = await fetch('http://localhost:5000/api/me', {
         method: 'DELETE',
         headers: {
-          'x-auth-token': token,
+          'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json',
         },
       });
