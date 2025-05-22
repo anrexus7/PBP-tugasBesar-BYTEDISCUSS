@@ -4,6 +4,7 @@ import Register from "../pages/register";
 import Me from "../pages/me";
 import Home from "../pages/home";
 import EditProfile from "../pages/editProfile";
+import QuestionList from "../pages/question/questionList";
 
 export const router = createBrowserRouter([
   {
@@ -36,5 +37,7 @@ export const router = createBrowserRouter([
         element : <Home />,
     },
     {
+      path : "/questions",
+      element : <QuestionList />,
     }
 ]);

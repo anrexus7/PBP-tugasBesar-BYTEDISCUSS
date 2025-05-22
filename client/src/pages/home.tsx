@@ -1,48 +1,39 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { Question,  fetchQuestions} from './question/questionList';
+import { fetchUserProfile } from './me';
 import '../css/Home.css';
-
-interface Question {
-  id: number;
-  title: string;
-  user: {
-    username: string;
-  };
-  createdAt: string;
-  tags: Array<{
-    name: string;
-  }>;
-}
 
 export default function Home() {
   const [questions, setQuestions] = useState<Question[]>([]);
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [searchResults, setSearchResults] = useState<Question[]>([]);
+  const [profilePicture, setProfilePicture] = useState<string>("default/default-avatar.jpg");
   const navigate = useNavigate();
 
-  // useEffect(() => {
-  //   const fetchQuestions = async () => {
-  //     try {
-  //       const response = await fetch('http://localhost:5000/api/questions', {
-  //         method: 'GET',
-  //         headers: {
-  //           'Content-Type': 'application/json'
-  //         }
-  //       });
+  useEffect(() => {
+    const loadProfilePicture = async () => {
+      const userData = await fetchUserProfile();
+      if (userData?.profilePicture) {
+        setProfilePicture(userData.profilePicture);
+      }
+    };
 
-  //       if (!response.ok) {
-  //         throw new Error('Failed to fetch questions');
-  //       }
+    loadProfilePicture();
+  }, []);
 
-  //       const data = await response.json();
-  //       setQuestions(data.slice(0, 5)); // Limit to 5 questions
-  //     } catch (error) {
-  //       console.error('Error fetching questions:', error);
-  //     }
-  //   };
+  useEffect(() => {
+    const loadQuestions = async () => {
+      try {
+        const data = await fetchQuestions(5); // Limit to 5 for homepage
+        setQuestions(data);
+      } catch (error) {
+        console.error('Error loading questions:', error);
+      }
+    };
 
-  //   fetchQuestions();
-  // }, []);
+    loadQuestions();
+  }, []);
 
   const handleSearch = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const query = e.target.value;
@@ -78,14 +69,30 @@ export default function Home() {
     <aside className="sidebar">
       <div className="sidebar-buttons">
         <button className="btn">TAGS</button>
-        <button className="btn">QUESTION</button>
+        <button className="btn" onClick={() => navigate(`/questions`)}>QUESTION</button>
       </div>
       <button className="btn login" onClick={() => navigate(`/auth/login`)}>LOG IN</button>
     </aside>
 
     <main className="main">
-        <div className="profile-circle" onClick={() => navigate(`/me`)}>
-          profile
+        <div 
+          className="profile-circle" 
+          onClick={() => navigate('/me')}
+        >
+          {profilePicture ? (
+            <img 
+              src={`http://localhost:5000/uploads/${profilePicture}`}
+              alt="Profile"
+              style={{
+                width: '100%',
+                height: '100%',
+                objectFit: 'cover',
+                borderRadius: '50%'
+              }}
+            />
+          ) : (
+            'profile'
+          )}
         </div>
 
         <div className="search-container">

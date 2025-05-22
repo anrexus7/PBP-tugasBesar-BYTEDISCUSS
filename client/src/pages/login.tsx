@@ -59,7 +59,7 @@ const Login: React.FC = () => {
         password: '',
       });
 
-      navigate('/me'); // Redirect to profile page after successful login
+      navigate('/home'); // Redirect to home page after successful login
 
     } catch (err: any) {
       setMessage(err.message);

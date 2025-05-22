@@ -1,113 +1,151 @@
-
-/* Profile box styling */
-.profile-box {
+html, body {
+  margin: 0;
+  padding: 0;
+  border: 0;
+  height: 100%;
   width: 100%;
-  max-width: 600px;
-  background-color: #fff;
-  border-radius: 8px;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-  padding: 30px; /* Increased padding for more space */
+  font-family: 'Segoe UI', sans-serif;
   box-sizing: border-box;
-  margin: 20px; /* Added margin for spacing around the box */
 }
 
-/* Profile header section */
-.profile-header {
+#root {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+}
+
+.edit-profile-container {
   display: flex;
-  justify-content: space-between;
+  justify-content: center;
   align-items: center;
-  margin-bottom: 30px; /* Increased spacing between header and content */
+  height: 100vh;
+  background: #1d2022;
+  font-family: 'Segoe UI', sans-serif;
 }
 
-.profile-info {
-  flex: 1;
-  margin-right: 20px; /* Added spacing between info and picture */
+.edit-profile-card {
+  background: #ffffff;
+  padding: 24px 30px;
+  width: 500px;
+  max-height: 95vh;
+  border-radius: 10px;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+  color : black;
+  overflow-y: auto;
 }
 
-.profile-info p {
-  margin: 10px 0; /* Increased spacing between lines */
-  font-size: 14px;
-  color: #333;
-}
-
-/* Profile picture section */
-.profile-picture-section {
+.edit-header {
   display: flex;
-  flex-direction: column;
   align-items: center;
+  gap: 16px;
+  margin-bottom: 12px;
 }
 
-.profile-picture {
-  width: 100px; /* Increased size for better proportions */
-  height: 100px;
+.profile-avatar {
+  width: 64px;
+  height: 64px;
   border-radius: 50%;
-  background-color: #ccc;
-  background-size: cover;
-  background-position: center;
-  margin-bottom: 15px; /* Added spacing below the picture */
+  object-fit: cover;
+  cursor: pointer;
+  border: 2px solid #ccc;
 }
 
-.username {
-  font-size: 18px; /* Slightly larger font size */
-  font-weight: bold;
+.avatar-wrapper {
+  position: relative;
   text-align: center;
-  color: #333;
-  margin-bottom: 10px; /* Added spacing below the username */
 }
 
-button {
-  padding: 10px 15px; /* Increased padding for better button size */
-  font-size: 14px;
-  color: #fff;
-  background-color: #007bff;
+.avatar-hint {
+  font-size: 10px;
+  color: #007bff;
+  margin-top: 4px;
+}
+
+.edit-form input,
+.edit-form textarea {
+  width: 100%;
+  padding: 8px 10px;
+  font-size: 13px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  margin-bottom: 10px;
+  box-sizing: border-box;
+}
+
+.edit-form textarea {
+  resize: none;
+  min-height: 60px;
+}
+
+.save-btn {
+  width: 100%;
+  padding: 10px;
+  background: #007bff;
+  color: white;
+  font-weight: 600;
   border: none;
-  border-radius: 4px;
+  border-radius: 6px;
   cursor: pointer;
 }
 
-button:hover {
-  background-color: #0056b3;
+.save-btn:hover {
+  background: #0056b3;
 }
 
-/* Questions and Answers sections */
-.qa-section {
-  margin-top: 30px; /* Increased spacing between sections */
+.footer-actions {
+  margin-top: 12px;
+  display: flex;
+  justify-content: center;
 }
 
-.qa-section h3 {
-  font-size: 18px;
-  margin-bottom: 15px; /* Increased spacing below section titles */
-  color: #333;
+.delete-btn {
+  background: none;
+  color: #dc3545;
+  border: none;
+  font-size: 13px;
+  cursor: pointer;
+  text-decoration: underline;
 }
 
-.qa-item {
-  padding: 15px; /* Increased padding for better readability */
-  background-color: #f1f1f1;
-  border-radius: 4px;
-  margin-bottom: 15px; /* Increased spacing between items */
-  font-size: 14px;
-  color: #333;
+.delete-btn:hover {
+  background: #c7c7c7;;
 }
 
-/* Error and success messages */
-.error-message {
-  color: red;
-  font-weight: bold;
-  margin-top: 20px; /* Increased spacing above the message */
+.error-text {
+  color: #dc3545;
+  font-size: 13px;
+  margin-top: 6px;
+  text-align: center;
 }
 
-.success-message {
-  color: green;
-  font-weight: bold;
-  margin-top: 20px; /* Increased spacing above the message */
+.success-text {
+  color: #28a745;
+  font-size: 13px;
+  margin-top: 6px;
+  text-align: center;
 }
 
-  .logout-button {
-    background-color: #f44336; /* Red */
-    color: white;
-    padding: 10px 20px;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-    font-size: 50px;
-  }
+.edit-profile-card {
+  background: #ffffff;
+  padding: 24px 30px;
+  width: 500px;
+  position: relative;  /* Add this */
+}
+
+.back-button {
+  position: absolute;
+  top: 24px;          /* Match the padding of edit-profile-card */
+  right: 30px;        /* Match the padding of edit-profile-card */
+  background: transparent;
+  border: none;
+  color: blue;
+  cursor: pointer;
+  font-size: 16px;
+  z-index: 2;         /* Ensure it stays above other content */
+}
+
+.back-button:hover {
+  text-decoration: underline;
+  background-color: #ccc;
+}
+

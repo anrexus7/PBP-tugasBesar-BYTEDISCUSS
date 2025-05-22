@@ -1,0 +1,131 @@
+html, body {
+  margin: 0;
+  padding: 0;
+  border: 0;
+  height: 100%;
+  width: 100%;
+  font-family: 'Segoe UI', sans-serif;
+  box-sizing: border-box;
+}
+
+.profile-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 30px;
+  background-color: #1d2022;
+  min-height: 100vh;
+  font-family: 'Segoe UI', sans-serif;
+}
+
+.profile-card {
+  background: #fff;
+  color : black;
+  border-radius: 12px;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.06);
+  padding: 24px 32px;
+  width: 700px;
+  max-width: 95%;
+}
+
+.profile-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.profile-left {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.profile-avatar {
+  width: 72px;
+  height: 72px;
+  background-color: #ccc;
+  background-size: cover;
+  background-position: center;
+  border-radius: 50%;
+  border: 2px solid #ddd;
+}
+
+.username {
+  font-size: 1.5rem;
+  font-weight: 600;
+  margin: 0;
+}
+
+.edit-button {
+  background-color: #007bff;
+  color: white;
+  border: none;
+  padding: 6px 14px;
+  font-size: 14px;
+  border-radius: 6px;
+  cursor: pointer;
+  margin-top: 4px;
+}
+
+.edit-button:hover {
+  background-color: #0056b3;
+}
+
+.logout-button {
+  background: none;
+  border: 1px solid #dc3545;
+  color: #dc3545;
+  padding: 6px 12px;
+  font-size: 14px;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.logout-button:hover {
+  background-color: #dc3545;
+  color: #fff;
+}
+
+.profile-info {
+  margin-top: 12px;
+  font-size: 14px;
+  color: #333;
+  line-height: 1.6;
+}
+
+.qa-section {
+  margin-top: 24px;
+}
+
+.qa-section h3 {
+  font-size: 16px;
+  color: #222;
+  margin-bottom: 8px;
+  border-bottom: 1px solid #eee;
+  padding-bottom: 4px;
+}
+
+.qa-item {
+  background: #c7c7c7;
+  padding: 8px 12px;
+  border-radius: 6px;
+  margin-bottom: 6px;
+  font-size: 14px;
+  color: #444;
+  border: 1px solid #e5e7eb;
+}
+
+.qa-empty {
+  font-size: 14px;
+  background: #c7c7c7;
+  color: #888;
+  margin-top: 4px;
+}
+
+.error-message {
+  color: #dc3545;
+  margin-top: 16px;
+  font-size: 14px;
+  text-align: center;
+}

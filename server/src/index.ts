@@ -4,6 +4,7 @@ import sequelize from './config/database';
 import authRoutes from './routes/auth.routes';
 import userRoutes from './routes/user.routes';
 import searchRoutes from './routes/search.routes';
+import question_answerRoutes from './routes/question_answer.routes';
 const app = express();
 
 // Middleware
@@ -16,6 +17,8 @@ app.use('/uploads', express.static('uploads'));
 app.use('/api/auth', authRoutes);
 app.use('/api/', userRoutes);
 app.use('/api/search', searchRoutes);
+app.use('/api', question_answerRoutes);
+
 
 
 // Database connection

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import '../css/app.css';
 import { Link, useNavigate } from "react-router-dom";
 
@@ -11,8 +11,14 @@ const Register: React.FC = () => {
 
   const [message, setMessage] = useState('');
   const [isError, setIsError] = useState(false); 
-
   const navigate = useNavigate();
+
+  useEffect(() => {
+      const token = localStorage.getItem('token');
+      if (token) {
+        navigate('/me');
+      }
+    }, [navigate]);
   
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({

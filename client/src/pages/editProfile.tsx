@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import '../css/app.css';
+import '../css/ProfilePage.css';
 import { useNavigate } from 'react-router-dom';
 import ProfilePictureUploadModal from './editProfilePicture';
 
@@ -10,78 +10,64 @@ const EditProfile: React.FC = () => {
     bio: '',
     currentPassword: '',
     newPassword: '',
-    profilePicture: '', // Add profile picture field
+    profilePicture: '',
   });
 
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [message, setMessage] = useState('');
+  const [feedbackMessage, setFeedbackMessage] = useState('');
   const [isError, setIsError] = useState(false);
   const navigate = useNavigate();
 
-  const openModal = () => setIsModalOpen(true);
-  const closeModal = () => setIsModalOpen(false);
-
   useEffect(() => {
-    const fetchUserData = async () => {
+    const fetchData = async () => {
       const token = localStorage.getItem('token');
-      if (!token) {
-        setMessage('No token found. Please log in.');
-        setIsError(true);
-        navigate('/auth/login');
-        return;
-      }
+      if (!token) return handleAuthError('Please login again.');
 
       try {
-        const response = await fetch('http://localhost:5000/api/me', {
-          method: 'GET',
+        const res = await fetch('http://localhost:5000/api/me', {
           headers: {
             'x-auth-token': token,
             'Content-Type': 'application/json',
           },
         });
 
-        if (!response.ok) {
-          const errorData = await response.json();
-          throw new Error(errorData.message || 'Failed to fetch user data');
-        }
+        if (!res.ok) throw new Error((await res.json()).message || 'Fetch failed');
 
-        const data = await response.json();
-        setFormData({
+        const data = await res.json();
+        setFormData(prev => ({
+          ...prev,
           username: data.username || '',
           email: data.email || '',
           bio: data.bio || '',
-          currentPassword: '',
-          newPassword: '',
-          profilePicture: data.profilePicture || '', // Set profile picture
-        });
+          profilePicture: data.profilePicture || '',
+        }));
       } catch (err: any) {
-        setMessage(err.message);
         setIsError(true);
+        setFeedbackMessage(err.message);
       }
     };
 
-    fetchUserData();
-  }, [navigate]);
+    fetchData();
+  }, []);
+
+  const handleAuthError = (msg: string) => {
+    setIsError(true);
+    setFeedbackMessage(msg);
+    navigate('/auth/login');
+  };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    setFormData({
-      ...formData,
-      [e.target.name]: e.target.value,
-    });
+    const { name, value } = e.target;
+    setFormData(prev => ({ ...prev, [name]: value }));
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     const token = localStorage.getItem('token');
-    if (!token) {
-      setMessage('No token found. Please log in.');
-      setIsError(true);
-      navigate('/auth/login');
-      return;
-    }
+    if (!token) return handleAuthError('Please login again.');
 
     try {
-      const response = await fetch('http://localhost:5000/api/me', {
+      const res = await fetch('http://localhost:5000/api/me', {
         method: 'PUT',
         headers: {
           'x-auth-token': token,
@@ -96,34 +82,23 @@ const EditProfile: React.FC = () => {
         }),
       });
 
-      if (!response.ok) {
-        const errorData = await response.json();
-        setIsError(true);
-        throw new Error(errorData.message || 'Failed to update profile');
-      }
+      if (!res.ok) throw new Error((await res.json()).message || 'Update failed');
 
-      const data = await response.json();
-      setMessage(data.message || 'Profile updated successfully!');
       setIsError(false);
+      setFeedbackMessage('Profile updated successfully.');
       navigate('/me');
     } catch (err: any) {
-      setMessage(err.message);
       setIsError(true);
+      setFeedbackMessage(err.message);
     }
   };
 
-  const handleDelete = async () => {
-    const token = localStorage.getItem('token'); // Retrieve token from localStorage
-
-    if (!token) {
-      setMessage('No token found. Please log in.');
-      setIsError(true);
-      navigate('/auth/login'); // Redirect to login if no token
-      return;
-    }
+  const handleDeleteAccount = async () => {
+    const token = localStorage.getItem('token');
+    if (!token) return handleAuthError('Please login again.');
 
     try {
-      const response = await fetch('http://localhost:5000/api/me', {
+      const res = await fetch('http://localhost:5000/api/me', {
         method: 'DELETE',
         headers: {
           'x-auth-token': token,
@@ -131,105 +106,76 @@ const EditProfile: React.FC = () => {
         },
       });
 
-      if (!response.ok) {
-        const errorData = await response.json();
-        setIsError(true);
-        throw new Error(errorData.message || 'Failed to delete account');
-      }
+      if (!res.ok) throw new Error((await res.json()).message || 'Delete failed');
 
-      setMessage('Account deleted successfully!');
-      setIsError(false);
-
-      setTimeout(() => {
-        localStorage.removeItem('token'); // Remove token from localStorage
-        navigate('/auth/login'); // Redirect to login after account deletion
-      }, 2000); // Optional delay to show success message
+      localStorage.removeItem('token');
+      navigate('/auth/login');
     } catch (err: any) {
-      setMessage(err.message);
       setIsError(true);
+      setFeedbackMessage(err.message);
     }
   };
 
-  const handleProfilePictureUpdate = (newProfilePicture: string) => {
-    setFormData(prevData => ({
-      ...prevData,
-      profilePicture: newProfilePicture
-    }));
+  const handleProfilePictureUpdate = (newPic: string) => {
+    setFormData(prev => ({ ...prev, profilePicture: newPic }));
   };
 
   return (
-    <div className="center-container">
-      <button className="logout-button" onClick={handleDelete}>
-        EXTERMINATE
-      </button>
-      <div className="profile-picture-container" onClick={openModal}>
-        <img
-          src={formData.profilePicture ? 
-            `http://localhost:5000/uploads/${formData.profilePicture}` : 
-            '/default-avatar.png'}
-          alt="Profile"
-          className="profile-picture"
-        />
-        <p>Click to change profile picture</p>
+    <div className="edit-profile-container">
+      <div className="edit-profile-card">
+        
+        <button
+          className="back-button"
+          onClick={() => {
+            navigate('/me');
+          }}
+        >
+          Back
+        </button>
+
+        <div className="edit-header">
+          <div className="avatar-wrapper" onClick={() => setIsModalOpen(true)}>
+            <img
+              src={
+                formData.profilePicture
+                  ? `http://localhost:5000/uploads/${formData.profilePicture}`
+                  : '/default-avatar.png'
+              }
+              alt="Avatar"
+              className="profile-avatar"
+            />
+            <p className="avatar-hint">Change</p>
+          </div>
+          <h2>Edit Profile</h2>
+        </div> 
+
+        <form className="edit-form" onSubmit={handleSubmit}>
+          <input name="username" placeholder="Username" value={formData.username} onChange={handleChange} required />
+          <input name="email" type="email" placeholder="Email" value={formData.email} onChange={handleChange} required />
+          <textarea name="bio" placeholder="Bio" value={formData.bio} onChange={handleChange} />
+          <input name="currentPassword" type="password" placeholder="Current Password" value={formData.currentPassword} onChange={handleChange} />
+          <input name="newPassword" type="password" placeholder="New Password" value={formData.newPassword} onChange={handleChange} />
+          <button type="submit" className="save-btn">Save</button>
+        </form>
+
+        {feedbackMessage && (
+          <p className={isError ? 'error-text' : 'success-text'}>{feedbackMessage}</p>
+        )}
+
+        <div className="footer-actions">
+          <button onClick={handleDeleteAccount} className="delete-btn">Delete Account</button>
+        </div>
       </div>
 
       <ProfilePictureUploadModal
         isOpen={isModalOpen}
-        onClose={closeModal}
-        onUploadSuccess={(message, profilePicture) => {
-          setMessage(message);
+        onClose={() => setIsModalOpen(false)}
+        onUploadSuccess={(msg, pic) => {
+          setFeedbackMessage(msg);
           setIsError(false);
-          handleProfilePictureUpdate(profilePicture);
+          handleProfilePictureUpdate(pic);
         }}
       />
-
-      <h2>Edit Profile</h2>
-      <div className="form-box">
-        <form onSubmit={handleSubmit}>
-          <input
-            name="username"
-            type="text"
-            placeholder="Username"
-            value={formData.username}
-            onChange={handleChange}
-            required
-          />
-          <input
-            name="email"
-            type="email"
-            placeholder="Email"
-            value={formData.email}
-            onChange={handleChange}
-            required
-          />
-          <textarea
-            name="bio"
-            placeholder="Bio"
-            value={formData.bio}
-            onChange={handleChange}
-          />
-          <input
-            name="currentPassword"
-            type="password"
-            placeholder="Current Password"
-            value={formData.currentPassword}
-            onChange={handleChange}
-          />
-          <input
-            name="newPassword"
-            type="password"
-            placeholder="New Password"
-            value={formData.newPassword}
-            onChange={handleChange}
-          />
-          <button type="submit">Save Changes</button>
-        </form>
-        {message && (
-          <p className={isError ? 'error-message' : 'success-message'}>
-            {message}
-          </p>
-        )}
-      </div>
     </div>
   );
 };
