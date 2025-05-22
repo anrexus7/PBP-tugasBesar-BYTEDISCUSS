@@ -8,7 +8,7 @@ module.exports = {
         type: Sequelize.UUID,
         primaryKey: true,
         allowNull: false,
-        defaultValue: Sequelize.literal('gen_random_uuid()'),
+        defaultValue: Sequelize.UUID,
       },
       content: {
         type: Sequelize.TEXT,

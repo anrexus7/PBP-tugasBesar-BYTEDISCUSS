@@ -6,7 +6,7 @@ import { User } from '../models/User';
 export const getTags = async (req: Request, res: Response) => {
   try {
     const tags = await Tag.findAll({
-      attributes: ['id', 'name', 'description'],
+      attributes: ['id', 'name'],
       order: [['name', 'ASC']]
     });
 
@@ -21,21 +21,23 @@ export const createTag = async (req: Request, res: Response) => {
   try {
     // @ts-ignore
     const userId = req.userId;
-    const { name, description } = req.body;
+    const { name } = req.body;
 
     if (!name) {
       res.status(400).json({ message: 'Tag name is required' });
-      return 
+      return;
     }
 
+    const normalizedTagName = name.trim().toLowerCase();
+
     const [tag, created] = await Tag.findOrCreate({
-      where: { name: name.toLowerCase() },
-      defaults: { description, userId }
+      where: { name: normalizedTagName },
+      defaults: { name: normalizedTagName }
     });
 
     if (!created) {
       res.status(400).json({ message: 'Tag already exists' });
-      return 
+      return;
     }
 
     res.status(201).json(tag);
@@ -70,7 +72,7 @@ export const getTagById = async (req: Request, res: Response) => {
 
     if (!tag) {
       res.status(404).json({ message: 'Tag not found' });
-      return 
+      return;
     }
 
     res.json(tag);

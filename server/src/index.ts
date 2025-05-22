@@ -4,6 +4,8 @@ import sequelize from './config/database';
 import authRoutes from './routes/auth.routes';
 import userRoutes from './routes/user.routes';
 import questionAnswerRoutes from './routes/question_answer.routes';
+import tagRoutes from './routes/tag.routes';
+import voteRoutes from './routes/vote.routes';
 const app = express();
 
 // Middleware
@@ -22,8 +24,10 @@ app.use('/uploads', express.static('uploads'));
 app.use('/api/auth', authRoutes);
 app.use('/api/', userRoutes);
 app.use('/api', questionAnswerRoutes);
+app.use('/api/tags', tagRoutes);
+app.use('/api', voteRoutes);
 
-app.listen(3000, () => console.log('Server berjalan di port 3000'));
+// app.listen(3000, () => console.log('Server berjalan di port 3000'));
 
 // Database connection
 sequelize.sync({ force: false }).then(() => {

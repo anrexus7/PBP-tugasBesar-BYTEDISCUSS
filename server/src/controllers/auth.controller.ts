@@ -6,13 +6,12 @@ const jwtSecret = process.env.JWT_SECRET || 'your-secret-key';
 
 export const register = async (req: Request, res: Response) => {
   try {
-    const { username, email, password } = req.body;
-    
+    const { username, email, password } = req.body;    
     // Check if user already exists
     const existingUser = await User.findOne({ where: { email } });
     if (existingUser) {
       res.status(400).json({ message: 'User already exists' });
-      return 
+      return;
     }
 
     // Create new user with default reputation

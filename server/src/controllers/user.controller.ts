@@ -3,6 +3,8 @@ import { User } from '../models/User';
 import path from 'path';
 import fs from 'fs';
 import { v4 as uuidv4 } from 'uuid';
+import bcrypt from 'bcrypt';
+
 
 declare global {
   namespace Express {
@@ -85,7 +87,7 @@ export const updateCurrentUser = async (req: Request, res: Response) => {
         res.status(400).json({ message: 'Current password is incorrect' });
         return 
       }
-      user.passwordHash = newPassword;
+      user.passwordHash = await bcrypt.hash(newPassword, 10);
     }
 
     await user.save();
