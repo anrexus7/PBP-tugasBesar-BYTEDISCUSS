@@ -1,37 +1,41 @@
 import { Request, Response } from 'express';
 import { User } from '../models/User';
 import jwt from 'jsonwebtoken';
+import path from 'path';
 
 const jwtSecret = process.env.JWT_SECRET || 'your-secret-key';
 
+// auth.controller.ts
 export const register = async (req: Request, res: Response) => {
   try {
-    const { username, email, password } = req.body;    
+    const { username, email, password } = req.body;
+
     // Check if user already exists
     const existingUser = await User.findOne({ where: { email } });
     if (existingUser) {
-      res.status(400).json({ message: 'User already exists' });
-      return;
+      res.status(400).json({ message: 'Email already exists' });
+      return 
     }
 
-    // Create new user with default reputation
-    const user = await User.create({ 
-      username, 
-      email, 
-      passwordHash: password,
-      reputation: 1 // Default reputation for new users
+    // Create user with default profile picture
+    const user = await User.create({
+      username,
+      email,
+      password: password,
+      profilePicture: 'defaultPic.png' // Set default profile picture
     });
-    
-    // Generate JWT token
-    // const token = jwt.sign({ id: user.id }, jwtSecret, { expiresIn: '1h' });
+
+    // Generate token
+    // const token = jwt.sign({ userId: user.id }, process.env.JWT_SECRET!, {
+    //   expiresIn: '1d'
+    // });
 
     res.status(201).json({ 
-      // token, 
-      user: { 
-        id: user.id, 
-        username: user.username, 
+      user: {
+        id: user.id,
+        username: user.username,
         email: user.email,
-        reputation: user.reputation
+        profilePicture: user.profilePicture
       } 
     });
   } catch (error) {
@@ -46,7 +50,7 @@ export const login = async (req: Request, res: Response) => {
     
     // Find user by email
     const user = await User.findOne({ where: { email } });
-    if (!user) {
+    if (!user || user.deletedAt) {
       res.status(400).json({ message: 'Invalid credentials' });
       return 
     }
@@ -62,8 +66,6 @@ export const login = async (req: Request, res: Response) => {
     const token = jwt.sign({ id: user.id }, jwtSecret, { expiresIn: '1h' });
 
     res.json({ token, user: { id: user.id, username: user.username, email: user.email } });
-    console.log('ID logged in:', user.id);
-    console.log('User logged in:', user.username);
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: 'Server error' });

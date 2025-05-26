@@ -113,7 +113,6 @@ export const createQuestion = async (req: Request, res: Response): Promise<void>
             defaults: {
               id: uuidv4(),
               name: tagName.toLowerCase(),
-              userId
             }
           });
           return tag;
@@ -154,6 +153,7 @@ export const createQuestion = async (req: Request, res: Response): Promise<void>
 // PUT /questions/:id
 export const updateQuestion = async (req: Request, res: Response): Promise<void> => {
   try {
+    const userId = (req as any).userId;
     const { title, content, tags } = req.body;
     const question = await Question.findByPk(req.params.id, {
       include: [Tag]
@@ -161,6 +161,12 @@ export const updateQuestion = async (req: Request, res: Response): Promise<void>
     
     if (!question) {
       res.status(404).json({ error: 'Question not found.' });
+      return;
+    }
+
+    // Check if the user is the owner of the question
+    if (question.userId !== userId) {
+      res.status(403).json({ error: 'You are not authorized to edit this question.' });
       return;
     }
 
@@ -180,7 +186,6 @@ export const updateQuestion = async (req: Request, res: Response): Promise<void>
             defaults: {
               id: uuidv4(),
               name: tagName.toLowerCase(),
-              userId: (req as any).userId
             }
           });
           return tag;
@@ -213,17 +218,24 @@ export const updateQuestion = async (req: Request, res: Response): Promise<void>
 };
 
 // DELETE /questions/:id
-export const deleteQuestion = async (req: Request, res: Response)  : Promise<void> =>  {
+export const deleteQuestion = async (req: Request, res: Response): Promise<void> => {
   try {
+    const userId = (req as any).userId;
     const question = await Question.findByPk(req.params.id);
 
-    if (question) {
-      await question.destroy();
-      res.json({ message: 'Pertanyaan berhasil dihapus.' });
-      return
+    if (!question) {
+      res.status(404).json({ error: 'Pertanyaan tidak ditemukan.' });
+      return;
     }
-    res.status(404).json({ error: 'Pertanyaan tidak ditemukan.' });
 
+    // Check if the user is the owner of the question
+    if (question.userId !== userId) {
+      res.status(403).json({ error: 'You are not authorized to delete this question.' });
+      return;
+    }
+
+    await question.destroy();
+    res.json({ message: 'Pertanyaan berhasil dihapus.' });
   } catch (err) {
     console.error('Error deleting question:', err);
     res.status(500).json({ error: 'Gagal menghapus pertanyaan.' });
@@ -265,25 +277,21 @@ export const postAnswer = async (req: Request, res: Response) : Promise<void> =>
 };
 
 // PUT /answers/:id
-export const updateAnswer = async (req: Request, res: Response)  : Promise<void> =>  {
+export const updateAnswer = async (req: Request, res: Response): Promise<void> => {
   try {
+    const userId = (req as any).userId;
     const { content } = req.body;
     const answer = await Answer.findByPk(req.params.id);
     
-    // const userId = (req as any).userId;
-    // console.log('User ID:', userId);
-    // if (!userId) {
-    //   res.status(401).json({ message: 'Unauthorized' });
-    //   return;
-    // }
-
-    // if (answer.userId !== req.user.id) {
-    //   res.status(403).json({ error: 'Tidak diizinkan.' });
-    // }
-
     if (!answer) {
       res.status(404).json({ error: 'Jawaban tidak ditemukan.' });
-      return; // Stop eksekusi
+      return;
+    }
+
+    // Check if the user is the owner of the answer
+    if (answer.userId !== userId) {
+      res.status(403).json({ error: 'You are not authorized to edit this answer.' });
+      return;
     }
 
     await answer.update({ content });
@@ -296,17 +304,24 @@ export const updateAnswer = async (req: Request, res: Response)  : Promise<void>
 };
 
 // DELETE /answers/:id
-export const deleteAnswer = async (req: Request, res: Response)  : Promise<void> =>  {
+export const deleteAnswer = async (req: Request, res: Response): Promise<void> => {
   try {
+    const userId = (req as any).userId;
     const answer = await Answer.findByPk(req.params.id);
 
-    if (answer) {
-      await answer.destroy();
-      res.json({ message: 'Jawaban berhasil dihapus.' });
+    if (!answer) {
+      res.status(404).json({ error: 'Jawaban tidak ditemukan.' });
       return;
     }
-    res.status(404).json({ error: 'Jawaban tidak ditemukan.' });
 
+    // Check if the user is the owner of the answer
+    if (answer.userId !== userId) {
+      res.status(403).json({ error: 'You are not authorized to delete this answer.' });
+      return;
+    }
+
+    await answer.destroy();
+    res.json({ message: 'Jawaban berhasil dihapus.' });
   } catch (err) {
     console.error('Error deleting answer:', err);
     res.status(500).json({ error: 'Gagal menghapus jawaban.' });

@@ -192,34 +192,19 @@ export const voteAnswer = async (req: Request, res: Response) => {
 export const getUserVote = async (req: Request, res: Response) => {
   try {
     const userId = (req as any).userId;
-    const { questionId, answerId } = req.query;
-
+    
     if (!userId) {
-        res.status(401).json({ message: 'Unauthorized' });
-      return 
+      res.status(401).json({ message: 'Unauthorized' });
+      return;
     }
 
-    let vote;
-    if (questionId) {
-      vote = await Vote.findOne({
-        where: {
-          userId,
-          questionId
-        }
-      });
-    } else if (answerId) {
-      vote = await Vote.findOne({
-        where: {
-          userId,
-          answerId
-        }
-      });
-    } else {
-        res.status(400).json({ error: 'Either questionId or answerId must be provided' });
-      return 
-    }
+    // Ambil semua vote milik user
+    const votes = await Vote.findAll({
+      where: { userId },
+      attributes: ['questionId', 'answerId', 'value']
+    });
 
-    res.json({ vote });
+    res.json({ votes });
   } catch (err) {
     console.error('Error getting user vote:', err);
     res.status(500).json({ error: 'Failed to get user vote' });

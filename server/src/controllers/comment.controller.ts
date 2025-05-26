@@ -41,9 +41,11 @@ export const createComment = async (req: Request, res: Response) => {
     });
 
     res.status(201).json(commentWithUser);
+    return 
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: 'Server error' });
+    return 
   }
 };
 
@@ -107,53 +109,53 @@ export const deleteComment = async (req: Request, res: Response) => {
   }
 };
 
-export const getComments = async (req: Request, res: Response) => {
-  try {
-    const { questionId, answerId } = req.query;
+// export const getComments = async (req: Request, res: Response) => {
+//   try {
+//     const { questionId, answerId } = req.query;
 
-    let whereCondition = {};
-    if (questionId) {
-      whereCondition = { questionId };
-    } else if (answerId) {
-      whereCondition = { answerId };
-    } else {
-      res.status(400).json({ message: 'Either questionId or answerId is required' });
-      return 
-    }
+//     let whereCondition = {};
+//     if (questionId) {
+//       whereCondition = { questionId };
+//     } else if (answerId) {
+//       whereCondition = { answerId };
+//     } else {
+//       res.status(400).json({ message: 'Either questionId or answerId is required' });
+//       return 
+//     }
 
-    const comments = await Comment.findAll({
-      where: {
-        ...whereCondition,
-        parentCommentId: null // Only get top-level comments
-      },
-      include: [
-        {
-          model: User,
-          attributes: ['id', 'username', 'profilePicture']
-        },
-        {
-          model: Comment,
-          as: 'replies',
-          include: [
-            {
-              model: User,
-              attributes: ['id', 'username', 'profilePicture']
-            }
-          ]
-        }
-      ],
-      order: [
-        ['createdAt', 'DESC'],
-        [{ model: Comment, as: 'replies' }, 'createdAt', 'ASC']
-      ]
-    });
+//     const comments = await Comment.findAll({
+//       where: {
+//         ...whereCondition,
+//         parentCommentId: null // Only get top-level comments
+//       },
+//       include: [
+//         {
+//           model: User,
+//           attributes: ['id', 'username', 'profilePicture']
+//         },
+//         {
+//           model: Comment,
+//           as: 'replies',
+//           include: [
+//             {
+//               model: User,
+//               attributes: ['id', 'username', 'profilePicture']
+//             }
+//           ]
+//         }
+//       ],
+//       order: [
+//         ['createdAt', 'DESC'],
+//         [{ model: Comment, as: 'replies' }, 'createdAt', 'ASC']
+//       ]
+//     });
 
-    res.json(comments);
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: 'Server error' });
-  }
-};
+//     res.json(comments);
+//   } catch (error) {
+//     console.error(error);
+//     res.status(500).json({ message: 'Server error' });
+//   }
+// };
 
 // Helper function to validate commentable entity
 async function getCommentableEntity(questionId: number, answerId: number, parentCommentId: number) {
@@ -241,12 +243,67 @@ export const createQuestionComment = async (req: Request, res: Response) => {
     }
   };
   
+// export const createAnswerComment = async (req: Request, res: Response) => {
+//   try {
+//     // @ts-ignore
+//     const userId = req.userId;
+//     const { id } = req.params;
+//     const { content, parentCommentId } = req.body;
+
+//     if (!content) {
+//       res.status(400).json({ message: 'Content is required' });
+//       return 
+//     }
+
+//     const answer = await Answer.findByPk(id);
+//     if (!answer) {
+//       res.status(404).json({ message: 'Answer not found' });
+//       return 
+//     }
+
+//     // Check if parent comment exists and belongs to this answer
+//     if (parentCommentId) {
+//       const parentComment = await Comment.findOne({
+//         where: { 
+//           id: parentCommentId,
+//           answerId: id 
+//         }
+//       });
+      
+//       if (!parentComment) {
+//         res.status(400).json({ message: 'Invalid parent comment' });
+//         return 
+//       }
+//     }
+
+//     const comment = await Comment.create({
+//       content,
+//       userId,
+//       answerId: id,
+//       parentCommentId: parentCommentId || null
+//     });
+
+//     const commentWithUser = await Comment.findByPk(comment.id, {
+//       include: [{
+//         model: User,
+//         attributes: ['id', 'username', 'profilePicture']
+//       }]
+//     });
+
+//     res.status(201).json(commentWithUser);
+//   } catch (error) {
+//     console.error(error);
+//     res.status(500).json({ message: 'Server error' });
+//   }
+// };
+
+
 export const createAnswerComment = async (req: Request, res: Response) => {
   try {
     // @ts-ignore
     const userId = req.userId;
     const { id } = req.params;
-    const { content, parentCommentId } = req.body;
+    const { content } = req.body;
 
     if (!content) {
       res.status(400).json({ message: 'Content is required' });
@@ -254,31 +311,16 @@ export const createAnswerComment = async (req: Request, res: Response) => {
     }
 
     const answer = await Answer.findByPk(id);
+
     if (!answer) {
       res.status(404).json({ message: 'Answer not found' });
       return 
     }
 
-    // Check if parent comment exists and belongs to this answer
-    if (parentCommentId) {
-      const parentComment = await Comment.findOne({
-        where: { 
-          id: parentCommentId,
-          answerId: id 
-        }
-      });
-      
-      if (!parentComment) {
-        res.status(400).json({ message: 'Invalid parent comment' });
-        return 
-      }
-    }
-
     const comment = await Comment.create({
       content,
       userId,
-      answerId: id,
-      parentCommentId: parentCommentId || null
+      answerId: id
     });
 
     const commentWithUser = await Comment.findByPk(comment.id, {
@@ -289,8 +331,42 @@ export const createAnswerComment = async (req: Request, res: Response) => {
     });
 
     res.status(201).json(commentWithUser);
+    return 
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: 'Server error' });
+    return 
+  }
+};
+
+export const getComments = async (req: Request, res: Response) => {
+  try {
+    const { questionId, answerId } = req.query;
+
+    // Validate input
+    if (!questionId && !answerId) {
+      res.status(400).json({ message: 'Either questionId or answerId is required' });
+      return 
+    }
+
+    const whereCondition: any = {};
+    if (questionId) whereCondition.questionId = questionId;
+    if (answerId) whereCondition.answerId = answerId;
+
+    const comments = await Comment.findAll({
+      where: whereCondition,
+      include: [{
+        model: User,
+        attributes: ['id', 'username', 'profilePicture']
+      }],
+      order: [['createdAt', 'ASC']]
+    });
+
+    res.json(comments);
+    return 
+  } catch (error) {
+    console.error('Error getting comments:', error);
+    res.status(500).json({ message: 'Failed to get comments' });
+    return 
   }
 };

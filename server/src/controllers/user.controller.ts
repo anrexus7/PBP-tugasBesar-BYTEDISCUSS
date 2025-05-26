@@ -3,18 +3,23 @@ import { User } from '../models/User';
 import path from 'path';
 import fs from 'fs';
 import { v4 as uuidv4 } from 'uuid';
-import bcrypt from 'bcrypt';
 
+// declare global {
+//   namespace Express {
+//     interface Request {
+//       file?: {
+//         originalname: string;
+//         buffer: Buffer;
+//       };
+//     }
+//   }
+// }
 
-declare global {
-  namespace Express {
-    interface Request {
-      file?: {
-        originalname: string;
-        buffer: Buffer;
-      };
-    }
-  }
+const uploadsDir = path.join(__dirname, '../../uploads');
+
+// Ensure uploads directory exists
+if (!fs.existsSync(uploadsDir)) {
+  fs.mkdirSync(uploadsDir, { recursive: true });
 }
 
 const deleteOldFile = (filePath: string) => {
@@ -31,13 +36,13 @@ export const getCurrentUser = async (req: Request, res: Response) => {
       include: [
         {
           association: 'questions',
-          attributes: ['id', 'content', 'createdAt'],
+          attributes: ['id', 'content','title', 'createdAt'],
           limit: 5,
           order: [['createdAt', 'DESC']]
         },
         {
           association: 'answers',
-          attributes: ['id', 'content', 'createdAt'],
+          attributes: ['id', 'content','questionId', 'createdAt'],
           limit: 5,
           order: [['createdAt', 'DESC']]
         }
@@ -49,6 +54,7 @@ export const getCurrentUser = async (req: Request, res: Response) => {
       return 
     }
 
+    console.log("User Data: ", user) // debug
     res.json(user);
   } catch (error) {
     console.error(error);
@@ -87,7 +93,7 @@ export const updateCurrentUser = async (req: Request, res: Response) => {
         res.status(400).json({ message: 'Current password is incorrect' });
         return 
       }
-      user.passwordHash = await bcrypt.hash(newPassword, 10);
+      user.passwordHash = newPassword;
     }
 
     await user.save();
@@ -122,14 +128,14 @@ export const uploadProfilePicture = async (req: Request, res: Response) => {
 
     // Hapus file lama jika ada
     if (user.profilePicture) {
-      const oldFilePath = path.join(__dirname, '../uploads', user.profilePicture);
+      const oldFilePath = path.join(__dirname, '../../uploads', user.profilePicture);
       deleteOldFile(oldFilePath);
     }
 
     // Generate nama file unik
     const fileExt = path.extname(req.file.originalname);
     const fileName = `${uuidv4()}${fileExt}`;
-    const filePath = path.join(__dirname, '../uploads', fileName);
+    const filePath = path.join(__dirname, '../../uploads', fileName);
 
     // Simpan file
     fs.writeFileSync(filePath, req.file.buffer);
@@ -161,7 +167,7 @@ export const deleteCurrentUser = async (req: Request, res: Response) => {
 
     // Hapus profile picture jika ada
     if (user.profilePicture) {
-      const filePath = path.join(__dirname, '../uploads', user.profilePicture);
+      const filePath = path.join(__dirname, '../../uploads', user.profilePicture);
       deleteOldFile(filePath);
     }
 

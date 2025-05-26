@@ -6,6 +6,6 @@ const router = express.Router();
 
 router.post('/questions/:questionId/vote', authMiddleware, voteQuestion);
 router.post('/answers/:answerId/vote', authMiddleware, voteAnswer);
-router.get('/votes', authMiddleware, getUserVote);
+router.get('/votes/me', authMiddleware, getUserVote);
 
 export default router;

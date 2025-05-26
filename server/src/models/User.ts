@@ -46,9 +46,10 @@ export class User extends Model {
   @Column({
     type: DataType.STRING(255),
     allowNull: true,
+    defaultValue: 'defaultPic.png', // Default profile picture
     field: 'profilePicture'
   })
-  declare profilePicture: string | null;
+  declare profilePicture: string;
 
   @Column({
     type: DataType.TEXT,

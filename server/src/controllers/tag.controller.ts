@@ -19,28 +19,43 @@ export const getTags = async (req: Request, res: Response) => {
 
 export const createTag = async (req: Request, res: Response) => {
   try {
-    // @ts-ignore
-    const userId = req.userId;
-    const { name } = req.body;
+    const userId = (req as any).userId;
+    const names: string[] = req.body.name; // Changed to accept array of tag names
+    console.log('\n\n\n\nReceived tag names:', names);
 
-    if (!name) {
-      res.status(400).json({ message: 'Tag name is required' });
+    console.log("Request body:", req.body);
+
+    if (!names || !Array.isArray(names) || names.length === 0) {
+      res.status(400).json({ message: 'Tag names are required as an array' });
       return;
     }
 
-    const normalizedTagName = name.trim().toLowerCase();
+    // Process each tag name
+    const normalizedTagNames = names.map(name => name.trim().toLowerCase());
+    const uniqueTagNames = [...new Set(normalizedTagNames)]; // Ensure uniqueness
 
-    const [tag, created] = await Tag.findOrCreate({
-      where: { name: normalizedTagName },
-      defaults: { name: normalizedTagName }
+    // Find existing tags
+    const existingTags = await Tag.findAll({
+      where: { name: uniqueTagNames }
     });
 
-    if (!created) {
-      res.status(400).json({ message: 'Tag already exists' });
-      return;
-    }
+    const existingTagNames = existingTags.map(tag => tag.name);
+    const newTagNames = uniqueTagNames.filter(name => !existingTagNames.includes(name));
 
-    res.status(201).json(tag);
+    // Create new tags
+    const createdTags = await Promise.all(
+      newTagNames.map(name => 
+        Tag.create({ 
+          name,
+          userId // Associate tag with user who created it
+        })
+      )
+    );
+
+    // Combine existing and new tags
+    const allTags = [...existingTags, ...createdTags];
+
+    res.status(201).json(allTags);
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: 'Server error' });

@@ -10,9 +10,13 @@ interface Question {
   viewCount: number;
   answers: Answer[];
   tags: { id: string; name: string }[];
-  User: {
+  user: { 
+    id: string;
     username: string;
+    profilePicture?: string;
   };
+  userId: string;
+  createdAt: string;
 }
 
 interface Answer {
@@ -40,24 +44,27 @@ const QuestionPage: React.FC = () => {
   const [availableTags, setAvailableTags] = useState<Tag[]>([]);
   const [newTagName, setNewTagName] = useState('');
   const [showTagForm, setShowTagForm] = useState(false);
+  const [tagError, setTagError] = useState('');
   const navigate = useNavigate();
-  const isLoggedIn = !!localStorage.getItem('token');
+  const token = localStorage.getItem('token');
+  const currentUserId = token ? JSON.parse(atob(token.split('.')[1]))?.id : null;
 
   const fetchQuestions = async () => {
-    const token = localStorage.getItem('token');
     try {
       const res = await fetch('http://localhost:5000/api/questions', {
         headers: { 'Authorization': `Bearer ${token}` }
       });
       const data = await res.json();
       setQuestions(data);
+      console.log('Fetched questions:', data);
+
+
     } catch (err) {
       setError('Failed to load questions');
     }
   };
 
   const fetchTags = async () => {
-    const token = localStorage.getItem('token');
     try {
       const res = await fetch('http://localhost:5000/api/tags', {
         headers: { 'Authorization': `Bearer ${token}` }
@@ -75,7 +82,10 @@ const QuestionPage: React.FC = () => {
     setSuccess('');
 
     try {
-      const token = localStorage.getItem('token');
+      const selectedTags = availableTags
+        .filter(tag => newQuestion.tags.includes(tag.id))
+        .map(tag => tag.name);
+
       const res = await fetch('http://localhost:5000/api/questions/new', {
         method: 'POST',
         headers: {
@@ -85,98 +95,117 @@ const QuestionPage: React.FC = () => {
         body: JSON.stringify({
           title: newQuestion.title,
           content: newQuestion.content,
-          tags: newQuestion.tags
+          tags: selectedTags
         }),
       });
 
-      if (!res.ok) throw new Error('Failed to add question');
+      if (!res.ok) {
+        const errorData = await res.json();
+        throw new Error(errorData.message || 'Failed to add question');
+      }
 
+      const newQuestionData = await res.json();
       setSuccess('Question added successfully');
       setNewQuestion({ title: '', content: '', tags: [] });
       fetchQuestions();
-    } catch (err) {
-      setError('Failed to add question');
+    } catch (err:any) {
+      setError(err.message || 'Failed to add question');
     }
   };
 
   const handleEdit = (question: Question) => {
     setEditingQuestionId(question.id);
-    setEditedQuestion({ 
-      title: question.title, 
+    setEditedQuestion({
+      title: question.title,
       content: question.content,
-      tags: question.tags?.map(tag => tag.id) || []
+      tags: question.tags?.map((tag) => tag.id) || [],
     });
   };
 
   const handleUpdate = async () => {
     if (!editingQuestionId) return;
-    
-    const token = localStorage.getItem('token');
-    try {
-      const res = await fetch(`http://localhost:5000/api/questions/${editingQuestionId}`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`,
-        },
-        body: JSON.stringify({
-          title: editedQuestion.title,
-          content: editedQuestion.content,
-          tags: editedQuestion.tags
-        }),
-      });
 
-      if (!res.ok) throw new Error('Failed to update question');
+    try {
+      const res = await fetch(
+        `http://localhost:5000/api/questions/${editingQuestionId}`,
+        {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({
+            title: editedQuestion.title,
+            content: editedQuestion.content,
+            tags: editedQuestion.tags,
+          }),
+        }
+      );
+
+      if (!res.ok) {
+        const errorData = await res.json();
+        throw new Error(errorData.message || "Failed to update question");
+      }
 
       setEditingQuestionId(null);
-      setEditedQuestion({ title: '', content: '', tags: [] });
+      setEditedQuestion({ title: "", content: "", tags: [] });
       fetchQuestions();
-    } catch (err) {
+    } catch (err: any) {
       console.error(err);
-      setError('Failed to update question');
+      setError(err.message || "Failed to update question");
     }
   };
 
   const handleDelete = async (id: string) => {
-    const token = localStorage.getItem('token');
     try {
       const res = await fetch(`http://localhost:5000/api/questions/${id}`, {
-        method: 'DELETE',
+        method: "DELETE",
         headers: {
-          'Authorization': `Bearer ${token}`,
+          Authorization: `Bearer ${token}`,
         },
       });
 
-      if (!res.ok) throw new Error('Failed to delete question');
+      if (!res.ok) {
+        const errorData = await res.json();
+        throw new Error(errorData.message || "Failed to delete question");
+      }
 
       fetchQuestions();
-    } catch (err) {
+    } catch (err: any) {
       console.error(err);
-      setError('Failed to delete question');
+      setError(err.message || "Failed to delete question");
     }
   };
 
   const handleTagToggle = (tagId: string, isEditing: boolean) => {
     if (isEditing) {
-      setEditedQuestion(prev => ({
+      setEditedQuestion((prev) => ({
         ...prev,
         tags: prev.tags.includes(tagId)
-          ? prev.tags.filter(id => id !== tagId)
-          : [...prev.tags, tagId]
+          ? prev.tags.filter((id) => id !== tagId)
+          : [...prev.tags, tagId],
       }));
     } else {
-      setNewQuestion(prev => ({
+      setNewQuestion((prev) => ({
         ...prev,
         tags: prev.tags.includes(tagId)
-          ? prev.tags.filter(id => id !== tagId)
-          : [...prev.tags, tagId]
+          ? prev.tags.filter((id) => id !== tagId)
+          : [...prev.tags, tagId],
       }));
     }
   };
 
-  const handleCreateTag = async () => {
+   const handleCreateTag = async () => {
     try {
-      const token = localStorage.getItem('token');
+      setTagError('');
+      
+      if (!newTagName.trim()) {
+        setTagError('Tag name cannot be empty');
+        return;
+      }
+
+      console.log("Tag trim: ", newTagName.trim());
+
       const res = await fetch('http://localhost:5000/api/tags/new', {
         method: 'POST',
         headers: {
@@ -184,17 +213,21 @@ const QuestionPage: React.FC = () => {
           'Authorization': `Bearer ${token}`,
         },
         body: JSON.stringify({
-          name: newTagName,
+          name: [newTagName.trim().toLowerCase()]
         }),
       });
 
-      if (!res.ok) throw new Error('Failed to create tag');
+      if (!res.ok) {
+        const errorData = await res.json();
+        throw new Error(errorData.message || 'Failed to create tag');
+      }
 
       setNewTagName('');
       setShowTagForm(false);
       fetchTags();
-    } catch (err) {
-      setError('Failed to create tag');
+    } catch (err:any) {
+      console.error('Error creating tag:', err);
+      setTagError(err.message || 'Failed to create tag');
     }
   };
 
@@ -204,132 +237,97 @@ const QuestionPage: React.FC = () => {
   }, []);
 
   return (
-    <div className="home-container">
-      <div className="main-content" style={{ maxWidth: '1200px', margin: '0 auto', padding: '2rem' }}>
-        <div className="form-box" style={{ 
-          backgroundColor: 'white', 
-          padding: '2rem', 
-          borderRadius: '8px', 
-          boxShadow: '0 1px 3px rgba(0,0,0,0.1)',
-          marginBottom: '2rem'
-        }}>
-          <h2 style={{ marginBottom: '1.5rem' }}>Ask a Question</h2>
-          <form onSubmit={handleSubmit}>
-            <div style={{ marginBottom: '1rem' }}>
+    <div className="home-container" style={styles.homeContainer}>
+      <div className="main-content" style={styles.mainContent}>
+        <div className="form-box" style={styles.formBox}>
+          <h2 style={styles.formTitle}>Ask a Question</h2>
+          <form onSubmit={handleSubmit} style={styles.form}>
+            <div style={styles.formGroup}>
               <input
                 type="text"
                 placeholder="Title"
                 value={newQuestion.title}
-                onChange={(e) => setNewQuestion({ ...newQuestion, title: e.target.value })}
-                style={{
-                  width: '100%',
-                  padding: '0.8rem',
-                  borderRadius: '6px',
-                  border: '1px solid #ddd',
-                  fontSize: '1rem'
-                }}
+                onChange={(e) =>
+                  setNewQuestion({ ...newQuestion, title: e.target.value })
+                }
+                style={styles.input}
                 required
               />
             </div>
-            <div style={{ marginBottom: '1.5rem' }}>
+            <div style={styles.formGroup}>
               <textarea
                 placeholder="Your question..."
                 value={newQuestion.content}
-                onChange={(e) => setNewQuestion({ ...newQuestion, content: e.target.value })}
+                onChange={(e) =>
+                  setNewQuestion({ ...newQuestion, content: e.target.value })
+                }
                 rows={6}
-                style={{
-                  width: '100%',
-                  padding: '0.8rem',
-                  borderRadius: '6px',
-                  border: '1px solid #ddd',
-                  fontSize: '1rem'
-                }}
+                style={styles.textarea}
                 required
               />
             </div>
-            
-            <div style={{ marginBottom: '1.5rem' }}>
-              <h4>Tags</h4>
-              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem', marginBottom: '1rem' }}>
-                {availableTags.map(tag => (
+
+            <div style={styles.tagSection}>
+              <h4 style={styles.sectionTitle}>Tags</h4>
+              <div style={styles.tagContainer}>
+                {availableTags.map((tag) => (
                   <button
-                    key={tag.id}
+                    key={`available-tag-${tag.id}`}
                     type="button"
                     onClick={() => handleTagToggle(tag.id, false)}
                     style={{
-                      padding: '0.5rem 1rem',
-                      borderRadius: '20px',
-                      border: '1px solid #ddd',
-                      backgroundColor: newQuestion.tags.includes(tag.id) ? '#007bff' : '#f8f9fa',
-                      color: newQuestion.tags.includes(tag.id) ? 'white' : '#212529',
-                      cursor: 'pointer'
+                      ...styles.tagButton,
+                      backgroundColor: newQuestion.tags.includes(tag.id)
+                        ? "#007bff"
+                        : "#f8f9fa",
+                      color: newQuestion.tags.includes(tag.id)
+                        ? "white"
+                        : "#212529",
                     }}
                   >
                     {tag.name}
                   </button>
                 ))}
               </div>
-              <button 
-                type="button" 
+              <button
+                type="button"
                 onClick={() => setShowTagForm(!showTagForm)}
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '0.5rem',
-                  padding: '0.5rem 1rem',
-                  backgroundColor: '#f8f9fa',
-                  border: '1px solid #ddd',
-                  borderRadius: '4px',
-                  cursor: 'pointer',
-                  color: 'black'
-                }}
+                style={styles.createTagButton}
               >
                 <FaTag /> Create New Tag
               </button>
-              
+
               {showTagForm && (
-                <div style={{ marginTop: '1rem', padding: '1rem', border: '1px solid #ddd', borderRadius: '4px' }}>
-                  <div style={{ marginBottom: '1rem' }}>
+                <div style={styles.tagFormContainer}>
+                  <div style={styles.formGroup}>
                     <input
                       type="text"
                       placeholder="Tag name"
                       value={newTagName}
-                      onChange={(e) => setNewTagName(e.target.value)}
-                      style={{
-                        width: '100%',
-                        padding: '0.5rem',
-                        borderRadius: '4px',
-                        border: '1px solid #ddd'
+                      onChange={(e) => {
+                        setNewTagName(e.target.value);
+                        setTagError("");
                       }}
+                      style={styles.input}
                       required
                     />
                   </div>
-                  <div style={{ display: 'flex', gap: '0.5rem' }}>
-                    <button 
+                  {tagError && <p style={styles.errorMessage}>{tagError}</p>}
+                  <div style={styles.formActions}>
+                    <button
                       type="button"
                       onClick={handleCreateTag}
-                      style={{
-                        padding: '0.5rem 1rem',
-                        backgroundColor: '#007bff',
-                        color: 'white',
-                        border: 'none',
-                        borderRadius: '4px',
-                        cursor: 'pointer'
-                      }}
+                      style={styles.primaryButton}
                     >
                       Create Tag
                     </button>
-                    <button 
+                    <button
                       type="button"
-                      onClick={() => setShowTagForm(false)}
-                      style={{
-                        padding: '0.5rem 1rem',
-                        backgroundColor: '#6c757d',
-                        color: 'white',
-                        border: 'none',
-                        borderRadius: '4px',
-                        cursor: 'pointer'
+                      onClick={() => {
+                        setShowTagForm(false);
+                        setTagError("");
                       }}
+                      style={styles.secondaryButton}
                     >
                       Cancel
                     </button>
@@ -337,153 +335,153 @@ const QuestionPage: React.FC = () => {
                 </div>
               )}
             </div>
-            
-            <button 
-              type="submit" 
-              className="register-button"
-              style={{ padding: '0.7rem 1.5rem', fontSize: '1rem' }}
-            >
+
+            <button type="submit" style={styles.submitButton}>
               Post Question
             </button>
           </form>
-          {error && <p className="error-message" style={{ color: '#d32f2f', marginTop: '1rem' }}>{error}</p>}
-          {success && <p className="success-message" style={{ color: '#2e7d32', marginTop: '1rem' }}>{success}</p>}
+          {error && <p style={styles.errorMessage}>{error}</p>}
+          {success && <p style={styles.successMessage}>{success}</p>}
         </div>
 
-        <div className="questions-list">
-          <h2 style={{ marginBottom: '1.5rem' }}>Questions</h2>
-          
+        <div className="questions-list" style={styles.questionsList}>
+          <h2 style={styles.listTitle}>Questions</h2>
+
           {questions.length === 0 ? (
-            <div className="no-questions">
+            <div style={styles.noQuestions}>
               <p>No questions yet.</p>
             </div>
           ) : (
             questions.map((question) => (
-              <div key={question.id} className="question-card" style={{ marginBottom: '1.5rem' }}>
-                <div className="question-content">
-                  {editingQuestionId === question.id ? (
-                    <>
-                      <input
-                        type="text"
-                        value={editedQuestion.title}
-                        onChange={(e) => setEditedQuestion({ ...editedQuestion, title: e.target.value })}
-                        style={{
-                          width: '100%',
-                          padding: '0.8rem',
-                          borderRadius: '6px',
-                          border: '1px solid #ddd',
-                          fontSize: '1.2rem',
-                          marginBottom: '1rem'
-                        }}
-                        required
-                      />
-                      <textarea
-                        value={editedQuestion.content}
-                        onChange={(e) => setEditedQuestion({ ...editedQuestion, content: e.target.value })}
-                        rows={6}
-                        style={{
-                          width: '100%',
-                          padding: '0.8rem',
-                          borderRadius: '6px',
-                          border: '1px solid #ddd',
-                          fontSize: '1rem',
-                          marginBottom: '1rem'
-                        }}
-                        required
-                      />
-                      
-                      <div style={{ marginBottom: '1.5rem' }}>
-                        <h4>Tags</h4>
-                        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem' }}>
-                          {availableTags.map(tag => (
-                            <button
-                              key={tag.id}
-                              type="button"
-                              onClick={() => handleTagToggle(tag.id, true)}
-                              style={{
-                                padding: '0.5rem 1rem',
-                                borderRadius: '20px',
-                                border: '1px solid #ddd',
-                                backgroundColor: editedQuestion.tags.includes(tag.id) ? '#007bff' : '#f8f9fa',
-                                color: editedQuestion.tags.includes(tag.id) ? 'white' : '#212529',
-                                cursor: 'pointer'
-                              }}
-                            >
-                              {tag.name}
-                            </button>
-                          ))}
-                        </div>
+              <div key={`question-${question.id}`} style={styles.questionCard}>
+                {currentUserId === question.userId && (
+                  <div style={styles.actionButtons}>
+                    <button
+                      onClick={() => handleEdit(question)}
+                      style={styles.editButton}
+                    >
+                      <FaEdit /> Edit
+                    </button>
+                    <button
+                      onClick={() => handleDelete(question.id)}
+                      style={styles.deleteButton}
+                    >
+                      <FaTrash /> Delete
+                    </button>
+                  </div>
+                )}
+
+                {editingQuestionId === question.id ? (
+                  <div style={styles.editForm}>
+                    <input
+                      type="text"
+                      value={editedQuestion.title}
+                      onChange={(e) =>
+                        setEditedQuestion({
+                          ...editedQuestion,
+                          title: e.target.value,
+                        })
+                      }
+                      style={styles.editInput}
+                      required
+                    />
+                    <textarea
+                      value={editedQuestion.content}
+                      onChange={(e) =>
+                        setEditedQuestion({
+                          ...editedQuestion,
+                          content: e.target.value,
+                        })
+                      }
+                      rows={6}
+                      style={styles.editTextarea}
+                      required
+                    />
+
+                    <div style={styles.editTagSection}>
+                      <h4>Tags</h4>
+                      <div style={styles.tagContainer}>
+                        {availableTags.map((tag) => (
+                          <button
+                            key={`edit-tag-${tag.id}`}
+                            type="button"
+                            onClick={() => handleTagToggle(tag.id, true)}
+                            style={{
+                              ...styles.tagButton,
+                              backgroundColor: editedQuestion.tags.includes(
+                                tag.id
+                              )
+                                ? "#007bff"
+                                : "#f8f9fa",
+                              color: editedQuestion.tags.includes(tag.id)
+                                ? "white"
+                                : "#212529",
+                            }}
+                          >
+                            {tag.name}
+                          </button>
+                        ))}
                       </div>
-                      
-                      <div style={{ display: 'flex', gap: '0.5rem' }}>
-                        <button 
-                          className="register-button"
-                          onClick={handleUpdate}
-                          style={{ padding: '0.5rem 1rem' }}
-                        >
-                          <FaCheck /> Save
-                        </button>
-                        <button 
-                          className="login-button"
-                          onClick={() => setEditingQuestionId(null)}
-                          style={{ padding: '0.5rem 1rem' }}
-                        >
-                          <FaTimes /> Cancel
-                        </button>
-                      </div>
-                    </>
-                  ) : (
-                    <>
-                      <h3 style={{ marginBottom: '0.5rem' }}>
-                        {question.title}
-                      </h3>
-                      <p className="question-excerpt" style={{ marginBottom: '1rem' }}>
-                        {question.content}
-                      </p>
-                      
-                      {question.tags && question.tags.length > 0 && (
-                        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem', marginBottom: '1rem' }}>
-                          {question.tags.map(tag => (
-                            <span 
-                              key={tag.id}
-                              style={{
-                                padding: '0.3rem 0.8rem',
-                                borderRadius: '20px',
-                                backgroundColor: '#e1f5fe',
-                                color: '#01579b',
-                                fontSize: '0.8rem'
-                              }}
+                    </div>
+
+                    <div style={styles.formActions}>
+                      <button
+                        onClick={handleUpdate}
+                        style={styles.primaryButton}
+                      >
+                        <FaCheck /> Save
+                      </button>
+                      <button
+                        onClick={() => setEditingQuestionId(null)}
+                        style={styles.secondaryButton}
+                      >
+                        <FaTimes /> Cancel
+                      </button>
+                    </div>
+                  </div>
+                ) : (
+                  <>
+                    <h3 style={styles.questionTitle}>{question.title}</h3>
+                    <p style={styles.questionContent}>{question.content}</p>
+
+                    {question.tags && question.tags.length > 0 && (
+                      <div style={styles.questionTags}>
+                        {question.tags.map((tag) => {
+                          const tagData =
+                            availableTags.find((t) => t.id === tag.id) || tag;
+                          return (
+                            <span
+                              key={`question-tag-${tag.id}`}
+                              style={styles.tagBadge}
                             >
-                              {tag.name}
+                              {typeof tagData === "object"
+                                ? tagData.name
+                                : tagData}
                             </span>
-                          ))}
-                        </div>
-                      )}
-                      
-                      <div className="question-meta" style={{ marginBottom: '1rem' }}>
-                        <span className="username">Asked by {question.User?.username || 'Anonymous'}</span>
-                        <span> • {question.viewCount} views</span>
-                        <span> • {question.answers?.length || 0} answers</span>
+                          );
+                        })}
                       </div>
-                      {isLoggedIn && (
-                        <div className="question-actions">
-                          <button 
-                            className="vote-button"
-                            onClick={() => handleEdit(question)}
-                          >
-                            <FaEdit /> Edit
-                          </button>
-                          <button 
-                            className="vote-button"
-                            onClick={() => handleDelete(question.id)}
-                          >
-                            <FaTrash /> Delete
-                          </button>
-                        </div>
-                      )}
-                    </>
-                  )}
-                </div>
+                    )}
+
+                    <div style={styles.questionMeta}>
+                      <span style={styles.metaItem}>
+                        Asked by {question.user?.username  || "Anonymous"}
+                      </span>
+                      <span style={styles.metaItem}>
+                        {" "}
+                        • {new Date(question.createdAt).toLocaleDateString()}
+                      </span>
+                      <span style={styles.metaItem}>
+                        {" "}
+                        • {question.viewCount} views
+                      </span>
+                      <span style={styles.metaItem}>
+                        {" "}
+                        • {question.answers?.length || 0} answers
+                      </span>
+                    </div>
+                  </>
+                )}
               </div>
             ))
           )}
@@ -491,6 +489,246 @@ const QuestionPage: React.FC = () => {
       </div>
     </div>
   );
+};
+
+const styles = {
+  homeContainer: {
+    backgroundColor: "#f5f5f5",
+    minHeight: "100vh",
+  },
+  mainContent: {
+    maxWidth: "1200px",
+    margin: "0 auto",
+    padding: "2rem",
+  },
+  formBox: {
+    backgroundColor: "white",
+    padding: "2rem",
+    borderRadius: "8px",
+    boxShadow: "0 1px 3px rgba(0,0,0,0.1)",
+    marginBottom: "2rem",
+  },
+  formTitle: {
+    marginBottom: "1.5rem",
+    color: "#333",
+    fontSize: "1.5rem",
+  },
+  form: {
+    display: "flex",
+    flexDirection: "column" as const,
+  },
+  formGroup: {
+    marginBottom: "1rem",
+  },
+  input: {
+    width: "100%",
+    padding: "0.8rem",
+    borderRadius: "6px",
+    border: "1px solid #ddd",
+    fontSize: "1rem",
+  },
+  textarea: {
+    width: "100%",
+    padding: "0.8rem",
+    borderRadius: "6px",
+    border: "1px solid #ddd",
+    fontSize: "1rem",
+    minHeight: "150px",
+    resize: "vertical" as const,
+  },
+  tagSection: {
+    marginBottom: "1.5rem",
+  },
+  sectionTitle: {
+    marginBottom: "0.5rem",
+    color: "#333",
+  },
+  tagContainer: {
+    display: "flex",
+    flexWrap: "wrap" as const,
+    gap: "0.5rem",
+    marginBottom: "1rem",
+  },
+  tagButton: {
+    padding: "0.5rem 1rem",
+    borderRadius: "20px",
+    border: "1px solid #ddd",
+    cursor: "pointer",
+    fontSize: "0.9rem",
+    transition: "all 0.2s ease",
+  },
+  createTagButton: {
+    display: "flex",
+    alignItems: "center",
+    gap: "0.5rem",
+    padding: "0.5rem 1rem",
+    backgroundColor: "#f8f9fa",
+    border: "1px solid #ddd",
+    borderRadius: "4px",
+    cursor: "pointer",
+    color: "black",
+    fontSize: "0.9rem",
+  },
+  tagFormContainer: {
+    marginTop: "1rem",
+    padding: "1rem",
+    border: "1px solid #ddd",
+    borderRadius: "4px",
+    backgroundColor: "#f9f9f9",
+  },
+  formActions: {
+    display: "flex",
+    gap: "0.5rem",
+  },
+  primaryButton: {
+    padding: "0.5rem 1rem",
+    backgroundColor: "#007bff",
+    color: "white",
+    border: "none",
+    borderRadius: "4px",
+    cursor: "pointer",
+    fontSize: "0.9rem",
+  },
+  secondaryButton: {
+    padding: "0.5rem 1rem",
+    backgroundColor: "#6c757d",
+    color: "white",
+    border: "none",
+    borderRadius: "4px",
+    cursor: "pointer",
+    fontSize: "0.9rem",
+  },
+  submitButton: {
+    padding: "0.7rem 1.5rem",
+    backgroundColor: "#28a745",
+    color: "white",
+    border: "none",
+    borderRadius: "4px",
+    cursor: "pointer",
+    fontSize: "1rem",
+    alignSelf: "flex-start",
+  },
+  errorMessage: {
+    color: "#d32f2f",
+    marginTop: "1rem",
+    fontSize: "0.9rem",
+  },
+  successMessage: {
+    color: "#2e7d32",
+    marginTop: "1rem",
+    fontSize: "0.9rem",
+  },
+  questionsList: {
+    backgroundColor: "white",
+    padding: "2rem",
+    borderRadius: "8px",
+    boxShadow: "0 1px 3px rgba(0,0,0,0.1)",
+  },
+  listTitle: {
+    marginBottom: "1.5rem",
+    color: "#333",
+  },
+  noQuestions: {
+    textAlign: "center" as const,
+    padding: "2rem",
+    color: "#666",
+  },
+  questionCard: {
+    backgroundColor: "white",
+    padding: "1.5rem",
+    borderRadius: "8px",
+    boxShadow: "0 1px 3px rgba(0,0,0,0.1)",
+    marginBottom: "1.5rem",
+    border: "1px solid #eee",
+  },
+  actionButtons: {
+    display: "flex",
+    gap: "0.5rem",
+    marginBottom: "1rem",
+    justifyContent: "flex-end",
+  },
+  editButton: {
+    padding: "0.5rem 1rem",
+    backgroundColor: "#f8f9fa",
+    border: "1px solid #ddd",
+    borderRadius: "4px",
+    cursor: "pointer",
+    display: "flex",
+    alignItems: "center",
+    gap: "0.5rem",
+    fontSize: "0.9rem",
+  },
+  deleteButton: {
+    padding: "0.5rem 1rem",
+    backgroundColor: "#f8f9fa",
+    border: "1px solid #ddd",
+    borderRadius: "4px",
+    cursor: "pointer",
+    display: "flex",
+    alignItems: "center",
+    gap: "0.5rem",
+    fontSize: "0.9rem",
+    color: "#dc3545",
+  },
+  editForm: {
+    display: "flex",
+    flexDirection: "column" as const,
+    gap: "1rem",
+  },
+  editInput: {
+    width: "100%",
+    padding: "0.8rem",
+    borderRadius: "6px",
+    border: "1px solid #ddd",
+    fontSize: "1.2rem",
+  },
+  editTextarea: {
+    width: "100%",
+    padding: "0.8rem",
+    borderRadius: "6px",
+    border: "1px solid #ddd",
+    fontSize: "1rem",
+    minHeight: "200px",
+    resize: "vertical" as const,
+  },
+  editTagSection: {
+    marginBottom: "1rem",
+  },
+  questionTitle: {
+    marginBottom: "0.5rem",
+    color: "#333",
+    fontSize: "1.3rem",
+  },
+  questionContent: {
+    marginBottom: "1rem",
+    color: "#444",
+    lineHeight: "1.6",
+    whiteSpace: "pre-wrap" as const,
+  },
+  questionTags: {
+    display: "flex",
+    flexWrap: "wrap" as const,
+    gap: "0.5rem",
+    marginBottom: "1rem",
+  },
+  tagBadge: {
+    padding: "0.3rem 0.8rem",
+    borderRadius: "20px",
+    backgroundColor: "#e1f5fe",
+    color: "#01579b",
+    fontSize: "0.8rem",
+  },
+  questionMeta: {
+    display: "flex",
+    gap: "1rem",
+    marginBottom: "1rem",
+    fontSize: "0.9rem",
+    color: "#666",
+  },
+  metaItem: {
+    display: "flex",
+    alignItems: "center",
+  },
 };
 
 export default QuestionPage;

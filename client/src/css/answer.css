@@ -1,0 +1,478 @@
+.question-detail-container {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 2rem 1rem;
+  font-family: 'Inter', sans-serif;
+}
+
+.question-header {
+  margin-bottom: 2rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.question-header h1 {
+  font-size: 1.8rem;
+  margin-bottom: 1rem;
+  color: #1f2937;
+}
+
+.question-meta {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.9rem;
+  color: #6b7280;
+}
+
+.user-info {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.user-avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 1px solid #e5e7eb;
+}
+
+.question-content-container {
+  display: flex;
+  gap: 1.5rem;
+  margin-bottom: 3rem;
+}
+
+.vote-section {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  min-width: 40px;
+}
+
+.vote-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 1.2rem;
+  color: #9ca3af;
+  padding: 0.5rem;
+  border-radius: 4px;
+  transition: all 0.2s;
+}
+
+.vote-btn:hover {
+  background-color: #f3f4f6;
+}
+
+.vote-btn.upvote:hover {
+  color: #10b981;
+}
+
+.vote-btn.downvote:hover {
+  color: #ef4444;
+}
+
+.vote-count {
+  font-weight: 600;
+  font-size: 1.1rem;
+}
+
+.question-content {
+  flex: 1;
+}
+
+.question-content p {
+  line-height: 1.6;
+  white-space: pre-wrap;
+}
+
+.answers-section {
+  margin-top: 2rem;
+}
+
+.answers-section h2 {
+  font-size: 1.5rem;
+  margin-bottom: 1.5rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.no-answers {
+  text-align: center;
+  color: #6b7280;
+  margin: 2rem 0;
+}
+
+.answers-list {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+.answer-card {
+  display: flex;
+  gap: 1.5rem;
+  padding: 1.5rem;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  background-color: #ffffff;
+}
+
+.answer-card.accepted {
+  border-color: #10b981;
+  background-color: rgba(16, 185, 129, 0.05);
+}
+
+.accepted-badge {
+  color: #10b981;
+  font-size: 1.2rem;
+  margin-top: 0.5rem;
+}
+
+.answer-content {
+  flex: 1;
+}
+
+.answer-content p {
+  line-height: 1.6;
+  white-space: pre-wrap;
+  margin-bottom: 1rem;
+}
+
+.answer-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.9rem;
+  color: #6b7280;
+}
+
+.answer-actions {
+  display: flex;
+  gap: 1rem;
+}
+
+.answer-actions button {
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 0.9rem;
+  color: #6b7280;
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+  transition: all 0.2s;
+}
+
+.answer-actions button:hover {
+  background-color: #f3f4f6;
+}
+
+.edit-btn:hover {
+  color: #2563eb;
+}
+
+.delete-btn:hover {
+  color: #ef4444;
+}
+
+.edit-answer-form textarea {
+  width: 100%;
+  padding: 0.75rem;
+  border: 1px solid #e5e7eb;
+  border-radius: 6px;
+  font-family: inherit;
+  font-size: 0.95rem;
+  margin-bottom: 1rem;
+  resize: vertical;
+  min-height: 150px;
+}
+
+.edit-actions {
+  display: flex;
+  gap: 1rem;
+}
+
+.edit-actions button {
+  padding: 0.5rem 1rem;
+  border-radius: 6px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.save-btn {
+  background-color: #2563eb;
+  color: white;
+  border: none;
+}
+
+.save-btn:hover {
+  background-color: #1d4ed8;
+}
+
+.cancel-btn {
+  background: none;
+  border: 1px solid #e5e7eb;
+  color: #6b7280;
+}
+
+.cancel-btn:hover {
+  background-color: #f3f4f6;
+}
+
+.new-answer-form {
+  margin-top: 3rem;
+}
+
+.new-answer-form h3 {
+  font-size: 1.2rem;
+  margin-bottom: 1rem;
+}
+
+.new-answer-form textarea {
+  width: 100%;
+  padding: 1rem;
+  border: 1px solid #e5e7eb;
+  border-radius: 6px;
+  font-family: inherit;
+  font-size: 0.95rem;
+  margin-bottom: 1rem;
+  resize: vertical;
+  min-height: 200px;
+}
+
+.submit-answer-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1.5rem;
+  background-color: #2563eb;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.submit-answer-btn:hover {
+  background-color: #1d4ed8;
+}
+
+.loading, .error {
+  text-align: center;
+  padding: 2rem;
+  font-size: 1.1rem;
+}
+
+.error {
+  color: #ef4444;
+}
+
+@media (max-width: 768px) {
+  .question-content-container {
+    flex-direction: column;
+    gap: 1rem;
+  }
+  
+  .vote-section {
+    flex-direction: row;
+    justify-content: flex-start;
+  }
+  
+  .answer-card {
+    flex-direction: column;
+    gap: 1rem;
+  }
+  
+  .answer-footer {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1rem;
+  }
+  
+  .answer-actions {
+    width: 100%;
+    justify-content: flex-end;
+  }
+}
+
+/* Add these styles to your existing CSS */
+
+.accepted-badge {
+  background-color: #10b981;
+  color: white;
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+  font-size: 0.8rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  margin-bottom: 1rem;
+}
+
+.comments-section {
+  margin-top: 1.5rem;
+  border-top: 1px solid #e5e7eb;
+  padding-top: 1rem;
+}
+
+.comment {
+  padding: 0.75rem;
+  background-color: #f9fafb;
+  border-radius: 6px;
+  margin-bottom: 0.75rem;
+}
+
+.comment-content {
+  font-size: 0.9rem;
+  margin-bottom: 0.5rem;
+}
+
+.comment-meta {
+  display: flex;
+  gap: 0.75rem;
+  font-size: 0.8rem;
+  color: #6b7280;
+}
+
+.new-comment-form {
+  margin-top: 1rem;
+}
+
+.new-comment-form textarea {
+  width: 100%;
+  padding: 0.5rem;
+  border: 1px solid #e5e7eb;
+  border-radius: 4px;
+  font-size: 0.9rem;
+  resize: vertical;
+  min-height: 60px;
+  margin-bottom: 0.5rem;
+}
+
+.post-comment-btn {
+  background: none;
+  border: none;
+  color: #2563eb;
+  font-size: 0.9rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+}
+
+.post-comment-btn:hover {
+  background-color: #f3f4f6;
+}
+
+
+
+.vote-section {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-right: 20px;
+  min-width: 40px;
+}
+
+.vote-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 1.2rem;
+  color: #6a737c;
+  padding: 5px;
+}
+
+.vote-btn:hover {
+  color: #f48024;
+}
+
+.vote-btn.upvote.active {
+  color: #f48024;
+}
+
+.vote-btn.downvote.active {
+  color: #6a737c;
+}
+
+.vote-count {
+  font-size: 1.2rem;
+  font-weight: bold;
+  margin: 5px 0;
+}
+
+.user-avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  margin-right: 8px;
+}
+
+.user-avatar.small {
+  width: 24px;
+  height: 24px;
+}
+
+.user-info {
+  display: flex;
+  align-items: center;
+  font-size: 0.9rem;
+  color: #6a737c;
+}
+
+.timestamp {
+  margin-left: 8px;
+  color: #9199a1;
+  font-size: 0.8rem;
+}
+
+/* Tambahkan di file CSS Anda */
+.vote-section {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-right: 15px;
+  min-width: 40px;
+}
+
+.vote-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 1.2rem;
+  color: #6a737c;
+  padding: 5px;
+}
+
+.vote-btn:hover {
+  color: #f48024;
+}
+
+.vote-btn.active {
+  color: #f48024;
+}
+
+.vote-count {
+  font-size: 1.2rem;
+  font-weight: bold;
+  margin: 5px 0;
+}
+
+.upvote.active {
+  color: #f48024;
+}
+
+.downvote.active {
+  color: #7193ff;
+}
