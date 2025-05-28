@@ -42,6 +42,7 @@ const AnswerPage: React.FC = () => {
   useEffect(() => {
     const fetchQuestion = async () => {
       try {
+        console.log('calling twice: 2');
         const res = await fetch(`http://localhost:5000/api/questions/${id}`, {
           headers: { 
             Authorization: `Bearer ${token}`
@@ -63,6 +64,7 @@ const AnswerPage: React.FC = () => {
     if (!newAnswer) return;
 
     try {
+      console.log('calling thrice : 3');
       const res = await fetch(`http://localhost:5000/api/questions/${id}/answers`, {
         method: 'POST',
         headers: {

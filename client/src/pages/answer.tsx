@@ -138,6 +138,7 @@ const [question, setQuestion] = useState<Question | null>({
     if (!newAnswer.trim()) return;
 
     try {
+      console.log("calling fourth : 4");
       const res = await fetch(`http://localhost:5000/api/questions/${id}/answers`, {
         method: 'POST',
         headers: {
@@ -239,6 +240,7 @@ const [question, setQuestion] = useState<Question | null>({
     }
 
     try {
+      console.log('calling fifth : 5');
       const res = await fetch(`http://localhost:5000/api/questions/${id}/vote`, {
         method: 'POST',
         headers: {

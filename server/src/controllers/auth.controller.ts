@@ -21,7 +21,7 @@ export const register = async (req: Request, res: Response) => {
     const user = await User.create({
       username,
       email,
-      password: password,
+      passwordHash: password,
       profilePicture: 'defaultPic.png' // Set default profile picture
     });
 

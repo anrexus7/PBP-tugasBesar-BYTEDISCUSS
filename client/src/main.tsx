@@ -4,7 +4,7 @@ import "./index.css"; // Update the path to the correct location of index.css
 import App from "./App.tsx"; // Update the path to the correct location of App.tsx
 
 createRoot(document.getElementById("root")!).render(
-  <StrictMode>
+  // <StrictMode>
     <App />
-  </StrictMode>
+  // </StrictMode>
 );
