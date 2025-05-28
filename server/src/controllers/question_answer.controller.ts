@@ -69,7 +69,15 @@ export const getQuestionById = async (req: Request, res: Response) : Promise<voi
 
     if (!question) {
       res.status(404).json({ error: 'Pertanyaan tidak ditemukan.' });
-      return
+      return;
+    }
+
+    // Increment viewCount if user is logged in
+    const userId = (req as any).userId || (req.user && req.user.id);
+    if (userId) {
+      question.viewCount = (question.viewCount || 0) + 1;
+      console.log('Incrementing view count for question:', question.id);
+      await question.save();
     }
 
     res.json(question);

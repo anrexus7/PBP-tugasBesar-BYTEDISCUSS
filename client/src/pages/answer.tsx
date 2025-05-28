@@ -63,85 +63,11 @@ const [question, setQuestion] = useState<Question | null>({
 
   const token = localStorage.getItem('token');
 
-  useEffect(() => {
-  const fetchQuestionWithComments = async () => {
-  try {
-    setIsLoading(true);
-    
-    // 1. Fetch question data
-    const questionRes = await fetch(`http://localhost:5000/api/questions/${id}`, {
-      headers: { 
-        Authorization: `Bearer ${token}`
-      }
-    });
-    
-    if (!questionRes.ok) throw new Error('Failed to fetch question');
-    
-    const questionData = await questionRes.json();
-    
-    // 2. Fetch comments for each answer
-    const answersWithComments = await Promise.all(
-      questionData.answers?.map(async (answer: any) => {
-        const commentsRes = await fetch(`http://localhost:5000/api?answerId=${answer.id}`, {
-          headers: {
-            Authorization: `Bearer ${token}`
-          }
-        });
-        
-        const comments = commentsRes.ok ? await commentsRes.json() : [];
-        
-        return {
-          ...answer,
-          comments,
-          voteCount: answer.voteCount || 0
-        };
-      }) || []
-    );
-    
-    // 3. Update state with complete data
-    setQuestion({
-      ...questionData,
-      voteCount: questionData.voteCount || 0,
-      answers: answersWithComments
-    });
-
-    // 4. Fetch user votes if logged in
-    if (token) {
-      const votesRes = await fetch('http://localhost:5000/api/votes/me', {
-        headers: {
-          Authorization: `Bearer ${token}`
-        }
-      });
-      
-      if (votesRes.ok) {
-        const votesData = await votesRes.json();
-        const votesMap = votesData.votes.reduce((acc: Record<string, number>, vote: any) => {
-          if (vote.questionId) acc[`q-${vote.questionId}`] = vote.value;
-          if (vote.answerId) acc[`a-${vote.answerId}`] = vote.value;
-          return acc;
-        }, {});
-        setUserVotes(votesMap);
-      }
-    }
-  } catch (err) {
-    console.error('Error loading question data:', err);
-    setError('Failed to load question data');
-  } finally {
-    setIsLoading(false);
-  }
-};
-
-// useEffect(() => {
-//   fetchQuestionWithComments();
-// }, [id, token]);
-
-  fetchQuestionWithComments();
-}, [id, token]);
-
   const handlePostAnswer = async () => {
     if (!newAnswer.trim()) return;
 
     try {
+      console.log("calling fourth : 4");
       const res = await fetch(`http://localhost:5000/api/questions/${id}/answers`, {
         method: 'POST',
         headers: {
@@ -243,6 +169,7 @@ const [question, setQuestion] = useState<Question | null>({
     }
 
     try {
+      console.log('calling fifth : 5');
       const res = await fetch(`http://localhost:5000/api/questions/${id}/vote`, {
         method: 'POST',
         headers: {
