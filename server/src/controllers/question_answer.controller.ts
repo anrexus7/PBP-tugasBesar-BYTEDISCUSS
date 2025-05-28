@@ -63,7 +63,12 @@ export const getQuestionById = async (req: Request, res: Response) : Promise<voi
       include: [
         User,
         { model: Answer, include: [User] },
-        Tag
+        Tag,
+        {
+          model: Vote,
+          as: 'votes',
+          attributes: ['id', 'value', 'userId']
+        }
       ]
     });
 

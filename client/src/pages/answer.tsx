@@ -97,7 +97,7 @@ const [question, setQuestion] = useState<Question | null>({
         };
       }) || []
     );
-    
+    console.log('question data :', questionData);
     // 3. Update state with complete data
     setQuestion({
       ...questionData,
@@ -105,7 +105,7 @@ const [question, setQuestion] = useState<Question | null>({
       answers: answersWithComments
     });
 
-    // 4. Fetch user votes if logged in
+    // Fetch user votes
     if (token) {
       const votesRes = await fetch('http://localhost:5000/api/votes/me', {
         headers: {
@@ -130,10 +130,6 @@ const [question, setQuestion] = useState<Question | null>({
     setIsLoading(false);
   }
 };
-
-// useEffect(() => {
-//   fetchQuestionWithComments();
-// }, [id, token]);
 
   fetchQuestionWithComments();
 }, [id, token]);
@@ -253,7 +249,7 @@ const [question, setQuestion] = useState<Question | null>({
       });
 
       const updatedQuestion = await res.json();
-
+      console.log("asdklfnalksdnfklasndfkln",updatedQuestion);
       if (!res.ok) {
         throw new Error(updatedQuestion.error || 'Failed to process vote');
       }
@@ -271,10 +267,7 @@ const [question, setQuestion] = useState<Question | null>({
         return {...prev, [key]: value};
       });
 
-      setQuestion(prev => ({
-        ...prev!,
-        voteCount: updatedQuestion.voteCount || 0
-      }));
+      setQuestion(updatedQuestion);
     } catch (err) {
       console.error('Error voting:', err);
       setError('Failed to process vote');
@@ -500,7 +493,7 @@ useEffect(() => {
   if (isLoading) return <div className="loading">Loading question...</div>;
   if (error) return <div className="error">{error}</div>;
   if (!question) return <div className="error">Question not found</div>;
-
+  console.log("qqqqqq",question)
   return (
     <div className="question-detail-container">
       <div className="question-header">
@@ -530,7 +523,7 @@ useEffect(() => {
           >
             <FaThumbsUp />
           </button>
-          <span className="vote-count">{question.voteCount ?? 0}</span>
+          <span className="vote-count">{question.votes?.length || 0}</span>
           <button 
             className={`vote-btn downvote ${userVotes[`q-${question.id}`] === -1 ? 'active' : ''}`}
             onClick={() => handleQuestionVote(-1)}

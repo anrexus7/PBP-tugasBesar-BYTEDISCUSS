@@ -36,7 +36,7 @@ export const voteQuestion = async (req: Request, res: Response) => {
         questionId
       }
     });
-
+    console.log('existingVote', existingVote);
     if (existingVote) {
       // If same vote, remove it
       if (existingVote.value === value) {
@@ -54,7 +54,8 @@ export const voteQuestion = async (req: Request, res: Response) => {
             }
           ]
         });
-        
+        console.log('updatedQuestion', updatedQuestion);
+         // Return updated question with votes
         res.json(updatedQuestion);
         return 
       } else {
@@ -72,7 +73,8 @@ export const voteQuestion = async (req: Request, res: Response) => {
             }
           ]
         });
-        
+        console.log('updatedQuestion 2', updatedQuestion);
+         // Return updated question with votes
         res.json(updatedQuestion);
         return 
       }
@@ -97,7 +99,8 @@ export const voteQuestion = async (req: Request, res: Response) => {
         }
       ]
     });
-
+    console.log('updatedQuestion 3', updatedQuestion);
+     // Return updated question with votes
     res.status(201).json(updatedQuestion);
   } catch (err) {
     console.error('Error voting on question:', err);
@@ -136,7 +139,7 @@ export const voteAnswer = async (req: Request, res: Response) => {
         answerId
       }
     });
-
+    console.log('a',existingVote);
     if (existingVote) {
       // If same vote, remove it
       if (existingVote.value === value) {
@@ -148,7 +151,7 @@ export const voteAnswer = async (req: Request, res: Response) => {
             { model: Vote, as: 'votes' }
           ]
         });
-        
+        console.log('b',updatedAnswer);
         res.json(updatedAnswer);
         return 
       } else {
@@ -161,7 +164,7 @@ export const voteAnswer = async (req: Request, res: Response) => {
             { model: Vote, as: 'votes' }
           ]
         });
-        
+        console.log('c',updatedAnswer);
         res.json(updatedAnswer);
         return 
       }
@@ -181,7 +184,7 @@ export const voteAnswer = async (req: Request, res: Response) => {
         { model: Vote, as: 'votes' }
       ]
     });
-
+    console.log('d',updatedAnswer);
     res.status(201).json(updatedAnswer);
   } catch (err) {
     console.error('Error voting on answer:', err);

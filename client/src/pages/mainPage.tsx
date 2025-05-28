@@ -103,6 +103,7 @@ const MainPage: React.FC = () => {
       const safeQuestions = Array.isArray(questionsData) ? questionsData : [];
 
       setQuestions(safeQuestions);
+      console.log("Fetched safe questions:", safeQuestions);
       setFilteredQuestions(safeQuestions);
 
       const allTags: string[] = [];
