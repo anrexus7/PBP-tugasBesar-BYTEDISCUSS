@@ -43,12 +43,12 @@ export const voteQuestion = controllerWrapper(async (req: Request, res: Response
       // Update question vote count
       const updatedQuestion = await Question.findByPk(questionId, {
         include: [
-          { model: User },
+          { model: User, attributes: ['id', 'username', 'profilePicture'] },
           { model: Vote, as: 'votes' },
           { 
             model: Answer, 
             as: 'answers',
-            include: [User]
+            include: [{ model: User, attributes: ['id', 'username', 'profilePicture'] }]
           }
         ]
       });
@@ -62,12 +62,12 @@ export const voteQuestion = controllerWrapper(async (req: Request, res: Response
       
       const updatedQuestion = await Question.findByPk(questionId, {
         include: [
-          { model: User },
+          { model: User, attributes: ['id', 'username', 'profilePicture'] },
           { model: Vote, as: 'votes' },
           { 
             model: Answer, 
             as: 'answers',
-            include: [User]
+            include: [{ model: User, attributes: ['id', 'username', 'profilePicture'] }]
           }
         ]
       });
@@ -88,12 +88,12 @@ export const voteQuestion = controllerWrapper(async (req: Request, res: Response
   
   const updatedQuestion = await Question.findByPk(questionId, {
     include: [
-      { model: User },
+      { model: User, attributes: ['id', 'username', 'profilePicture'] },
       { model: Vote, as: 'votes' },
       { 
         model: Answer, 
         as: 'answers',
-        include: [User]
+        include: [{ model: User, attributes: ['id', 'username', 'profilePicture'] }]
       }
     ]
   });
@@ -137,7 +137,7 @@ export const voteAnswer = controllerWrapper(async (req: Request, res: Response, 
       
       const updatedAnswer = await Answer.findByPk(answerId, {
         include: [
-          User,
+          { model: User, attributes: ['id', 'username', 'profilePicture'] },
           { model: Vote, as: 'votes' }
         ]
       });
@@ -150,7 +150,7 @@ export const voteAnswer = controllerWrapper(async (req: Request, res: Response, 
       
       const updatedAnswer = await Answer.findByPk(answerId, {
         include: [
-          User,
+          { model: User, attributes: ['id', 'username', 'profilePicture'] },
           { model: Vote, as: 'votes' }
         ]
       });
@@ -170,7 +170,7 @@ export const voteAnswer = controllerWrapper(async (req: Request, res: Response, 
 
   const updatedAnswer = await Answer.findByPk(answerId, {
     include: [
-      User,
+      { model: User, attributes: ['id', 'username', 'profilePicture'] },
       { model: Vote, as: 'votes' }
     ]
   });

@@ -65,7 +65,13 @@ export const updateComment = controllerWrapper(async (req: Request, res: Respons
   comment.content = content;
   await comment.save();
 
-  res.status(200).json(comment);
+  const updatedComment = await Comment.findByPk(comment.id, {
+    include: [{
+      model: User,
+      attributes: ['id', 'username', 'profilePicture']
+    }]
+  });
+  res.status(200).json(updatedComment);
 });
 
 export const deleteComment = controllerWrapper(async (req: Request, res: Response, next: NextFunction) => {

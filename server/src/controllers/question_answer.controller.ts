@@ -22,12 +22,21 @@ declare global {
 export const getAllQuestions = controllerWrapper(async (req: Request, res: Response) => {
   const questions = await Question.findAll({
     include: [
-      { model: User },
+      { 
+        model: User,
+        attributes: ['id', 'username', 'profilePicture']
+      },
       { model: Tag, through: { attributes: [] } },
       {
         model: Answer,
         as: 'answers',
         attributes: ['id', 'content', 'isAccepted'],
+        include: [
+          {
+            model: User,
+            attributes: ['id', 'username', 'profilePicture']
+          }
+        ]
       },
       {
         model: Vote,
@@ -56,14 +65,25 @@ export const getAllQuestions = controllerWrapper(async (req: Request, res: Respo
 export const getQuestionById = controllerWrapper(async (req: Request, res: Response): Promise<void> => {
   const question = await Question.findByPk(req.params.id, {
     include: [
-      User,
+      {
+        model: User,
+        attributes: ['id', 'username', 'profilePicture']
+      },
       { 
         model: Answer, 
         include: [
-          User,
+          {
+            model: User,
+            attributes: ['id', 'username', 'profilePicture']
+          },
           {
             model: Comment,
-            include: [User],
+            include: [
+              {
+                model: User,
+                attributes: ['id', 'username', 'profilePicture']
+              }
+            ],
             order: [['createdAt', 'ASC']]
           }
         ]
@@ -144,12 +164,21 @@ export const createQuestion = controllerWrapper(async (req: Request, res: Respon
 
   const questionWithRelations = await Question.findByPk(question.id, {
     include: [
-      { model: User },
+      {
+        model: User,
+        attributes: ['id', 'username', 'profilePicture']
+      },
       { model: Tag, through: { attributes: [] } },
       { 
         model: Answer, 
         as: 'answers', 
-        attributes: ['id', 'content', 'isAccepted'] 
+        attributes: ['id', 'content', 'isAccepted'],
+        include: [
+          {
+            model: User,
+            attributes: ['id', 'username', 'profilePicture']
+          }
+        ]
       }
     ],
   });
@@ -211,8 +240,27 @@ export const updateQuestion = controllerWrapper(async (req: Request, res: Respon
 
   const updatedQuestion = await Question.findByPk(question.id, {
     include: [
-      User,
-      { model: Tag, through: { attributes: [] } }
+      {
+        model: User,
+        attributes: ['id', 'username', 'profilePicture']
+      },
+      { model: Tag, through: { attributes: [] } },
+      {
+        model: Answer,
+        as: 'answers',
+        attributes: ['id', 'content', 'isAccepted'],
+        include: [
+          {
+            model: User,
+            attributes: ['id', 'username', 'profilePicture']
+          }
+        ]
+      },
+      {
+        model: Vote,
+        as: 'votes',
+        attributes: ['id', 'value', 'userId']
+      }
     ]
   });
 
@@ -263,7 +311,14 @@ export const postAnswer = controllerWrapper(async (req: Request, res: Response):
     questionId,
     isAccepted: false
    });
-  const answerWithUser = await Answer.findByPk(answer.id, { include: [User] });
+  const answerWithUser = await Answer.findByPk(answer.id, { 
+    include: [
+      {
+        model: User,
+        attributes: ['id', 'username', 'profilePicture']
+      }
+    ]
+  });
 
   res.status(201).json(answerWithUser);
 });
@@ -286,7 +341,14 @@ export const updateAnswer = controllerWrapper(async (req: Request, res: Response
   }
 
   await answer.update({ content });
-  const updatedAnswer = await Answer.findByPk(answer.id, { include: [User] });
+  const updatedAnswer = await Answer.findByPk(answer.id, { 
+    include: [
+      {
+        model: User,
+        attributes: ['id', 'username', 'profilePicture']
+      }
+    ]
+  });
   res.status(200).json(updatedAnswer);
 });
 
