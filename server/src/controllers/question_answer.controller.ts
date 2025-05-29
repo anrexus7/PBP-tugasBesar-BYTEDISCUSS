@@ -3,6 +3,7 @@ import { Question } from '../models/Question';
 import { Answer } from '../models/Answer';
 import { User } from '../models/User';
 import { Tag } from '../models/Tag';
+import { Comment } from '../models/Comment';
 import { v4 as uuidv4 } from 'uuid';
 import { Vote } from '../models/Vote';
 import { QuestionTag } from '../models/QuestionTag';
@@ -56,7 +57,17 @@ export const getQuestionById = controllerWrapper(async (req: Request, res: Respo
   const question = await Question.findByPk(req.params.id, {
     include: [
       User,
-      { model: Answer, include: [User] },
+      { 
+        model: Answer, 
+        include: [
+          User,
+          {
+            model: Comment,
+            include: [User],
+            order: [['createdAt', 'ASC']]
+          }
+        ]
+      },
       Tag,
       {
         model: Vote,
@@ -75,7 +86,6 @@ export const getQuestionById = controllerWrapper(async (req: Request, res: Respo
   const userId = (req as any).userId || (req.user && req.user.id);
   if (userId) {
     question.viewCount = (question.viewCount || 0) + 1;
-    console.log('Incrementing view count for question:', question.id);
     await question.save();
   }
 

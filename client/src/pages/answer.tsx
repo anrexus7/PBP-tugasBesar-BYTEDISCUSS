@@ -41,6 +41,26 @@ type Question = {
 
 const AnswerPage: React.FC = () => {
   const { id } = useParams();
+
+  // Function to get current user ID from JWT token
+  const getCurrentUserId = (): string | null => {
+    const token = localStorage.getItem('token');
+    if (!token) return null;
+    
+    try {
+      const payload = JSON.parse(atob(token.split('.')[1]));
+      return payload.id;
+    } catch (err) {
+      return null;
+    }
+  };
+
+  // Helper function to check if current user owns the answer
+  const isAnswerOwner = (answer: Answer): boolean => {
+    const currentUserId = getCurrentUserId();
+    return currentUserId !== null && answer.user?.id === currentUserId;
+  };
+
 const [question, setQuestion] = useState<Question | null>({
   id: '',
   title: '',
@@ -162,7 +182,6 @@ const [question, setQuestion] = useState<Question | null>({
     }
   };
 
-// --- Old upvote/downvote logic (commented out for reference) ---
 const handleQuestionVote = async (value: number) => {
   if (!token) {
     alert('Please login to vote');
@@ -250,127 +269,6 @@ const handleAnswerVote = async (answerId: string, value: number) => {
   } catch (err:any) {
     console.error('Error voting on answer:', err);
     setError(err.message || 'Failed to process vote');
-  }
-};
-// --- End old logic ---
-
-  // --- New upvote/downvote logic (active) ---
-  // const handleQuestionVote = async (value: number) => {
-  //   if (!token) {
-  //     alert('Please login to vote');
-  //     return;
-  //   }
-  //   try {
-  //     // Toggle logic: if already voted with this value, remove vote (set to 0)
-  //     const currentVote = userVotes[`q-${question?.id}`];
-  //     const sendValue = currentVote === value ? 0 : value;
-  //     const res = await fetch(`http://localhost:5000/api/questions/${id}/vote`, {
-  //       method: 'POST',
-  //       headers: {
-  //         'Content-Type': 'application/json',
-  //         'Authorization': `Bearer ${token}`
-  //       },
-  //       body: JSON.stringify({ value: sendValue })
-  //     });
-  //     const updatedQuestion = await res.json();
-  //     if (!res.ok) {
-  //       throw new Error(updatedQuestion.error || 'Failed to process vote');
-  //     }
-  //     setUserVotes(prev => {
-  //       const key = `q-${id}`;
-  //       if (sendValue === 0) {
-  //         const newVotes = { ...prev };
-  //         delete newVotes[key];
-  //         return newVotes;
-  //       }
-  //       return { ...prev, [key]: sendValue };
-  //     });
-  //     setQuestion(prev => ({
-  //       ...prev!,
-  //       voteCount: updatedQuestion.voteCount || 0
-  //     }));
-  //   } catch (err) {
-  //     console.error('Error voting:', err);
-  //     setError('Failed to process vote');
-  //   }
-  // };
-
-  // const handleAnswerVote = async (answerId: string, value: number) => {
-  //   if (!token) {
-  //     alert('Please login to vote');
-  //     return;
-  //   }
-  //   try {
-  //     const currentVote = userVotes[`a-${answerId}`];
-  //     const sendValue = currentVote === value ? 0 : value;
-  //     const res = await fetch(`http://localhost:5000/api/answers/${answerId}/vote`, {
-  //       method: 'POST',
-  //       headers: {
-  //         'Content-Type': 'application/json',
-  //         'Authorization': `Bearer ${token}`
-  //       },
-  //       body: JSON.stringify({ value: sendValue })
-  //     });
-  //     if (!res.ok) {
-  //       const errorData = await res.json();
-  //       throw new Error(errorData.message || 'Failed to process vote');
-  //     }
-  //     const updatedAnswer = await res.json();
-  //     setUserVotes(prev => {
-  //       const key = `a-${answerId}`;
-  //       if (sendValue === 0) {
-  //         const newVotes = { ...prev };
-  //         delete newVotes[key];
-  //         return newVotes;
-  //       }
-  //       return { ...prev, [key]: sendValue };
-  //     });
-  //     setQuestion(prev => {
-  //       if (!prev) return prev;
-  //       return {
-  //         ...prev,
-  //         answers: prev.answers.map(answer =>
-  //           answer.id === answerId
-  //             ? { ...answer, voteCount: updatedAnswer.voteCount }
-  //             : answer
-  //         )
-  //       };
-  //     });
-  //   } catch (err: any) {
-  //     console.error('Error voting on answer:', err);
-  //     setError(err.message || 'Failed to process vote');
-  //   }
-  // };
-  // --- End new logic ---
-
-
-  const reloadComments = async (answerId: string) => {
-  try {
-    const res = await fetch(`http://localhost:5000/api?answerId=${answerId}`, {
-      headers: {
-        Authorization: `Bearer ${token}`
-      }
-    });
-    
-    if (!res.ok) {
-      throw new Error('Failed to load comments');
-    }
-    
-    const comments = await res.json();
-    
-    setQuestion(prev => {
-      if (!prev) return prev;
-      return {
-        ...prev,
-        answers: prev.answers.map(answer => 
-          answer.id === answerId 
-            ? { ...answer, comments }
-            : answer
-        )
-      };
-    });
-  } catch (err) {
-    console.error('Error loading comments:', err);
   }
 };
 
@@ -484,33 +382,6 @@ const reloadAllData = async () => {
     setIsLoading(false);
   }
 };
-
-// Commented out to prevent double-fetching and double-incrementing viewCount:
-// useEffect(() => {
-//   const fetchQuestionWithComments = async () => {
-//     try {
-//       const res = await fetch(`http://localhost:5000/api/questions/${id}`, {
-//         headers: { 
-//           Authorization: `Bearer ${token}`
-//         }
-//       });
-      
-//       if (!res.ok) throw new Error('Failed to fetch question');
-      
-//       const questionData = await res.json();
-//       setQuestion(questionData);
-//     } catch (err) {
-//       console.error('Error fetching question:', err);
-//       setError('Failed to load question');
-//     } finally {
-//       setIsLoading(false);
-//     }
-//   };
-
-//   fetchQuestionWithComments();
-// }, [id, token]);
-
-
 
   useEffect(() => {
     reloadAllData();
@@ -642,8 +513,7 @@ const reloadAllData = async () => {
                             />
                             <span>{answer.user?.username || 'Anonymous'}</span>
                             <span className="timestamp">answered {formatDate(answer.createdAt)}</span>
-                          </div>
-                          {token && (
+                          </div>                          {token && isAnswerOwner(answer) && (
                             <div className="answer-actions">
                               <button 
                                 className="edit-btn"
