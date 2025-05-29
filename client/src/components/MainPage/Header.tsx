@@ -25,7 +25,7 @@ const Header: React.FC<HeaderProps> = ({
   return (
     <header className={styles.header}>
       <div className={styles.logo}>
-        <Link to="/">DevForum</Link>
+        <Link to="/mainPage">BYTEDISCUSS</Link>
       </div>
 
       <div className={styles.searchBar}>

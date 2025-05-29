@@ -23,6 +23,7 @@ const MainPage: React.FC = () => {
   } = useQuestions();
 
   const { currentUser, isLoggedIn, showProfileDropdown, setShowProfileDropdown, handleLogout } = useUser();
+  console.log("Current User:", currentUser);
 
   if (isLoading) {
     return (

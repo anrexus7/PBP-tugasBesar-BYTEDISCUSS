@@ -92,10 +92,6 @@ const ProfilePage: React.FC = () => {
           <div className={styles.info}>
             <h2 className={styles.username}>{user.username}</h2>
             <p className={styles.email}>{user.email}</p>
-            <div className={styles.reputationBadge}>
-              <span>Reputation: </span>
-              <span className={styles.reputationScore}>{user.reputation}</span>
-            </div>
             <div className={styles.bioSection}>
               <h4>About Me</h4>
               <p className={styles.bio}>{user.bio || 'No bio yet.'}</p>

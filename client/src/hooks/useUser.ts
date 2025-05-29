@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 
@@ -19,7 +19,10 @@ const useUser = () => {
   const fetchCurrentUser = async () => {
     try {
       const token = localStorage.getItem("token");
-      if (!token) return;
+      if (!token) {
+        setCurrentUser(null);
+        return;
+      }
 
       const response = await axios.get("http://localhost:5000/api/me", {
         headers: { Authorization: `Bearer ${token}` },
@@ -28,8 +31,17 @@ const useUser = () => {
       setCurrentUser(response.data);
     } catch (err) {
       console.error("Failed to fetch user data:", err);
+      setCurrentUser(null);
     }
   };
+
+  useEffect(() => {
+    if (isLoggedIn) {
+      fetchCurrentUser();
+    } else {
+      setCurrentUser(null);
+    }
+  }, [isLoggedIn]);
 
   const handleLogout = () => {
     localStorage.removeItem("token");
