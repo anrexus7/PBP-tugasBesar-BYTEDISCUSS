@@ -1,17 +1,16 @@
 import { createBrowserRouter, Navigate } from "react-router-dom";
 import Login from "../pages/login";
 import Register from "../pages/register";
-import Me from "../pages/me";
-import EditProfile from "../pages/editProfile";
-import QuestionPage from "../pages/question";
-import QuestionList from "../pages/questionList";
+import QuestionPage from "../components/QuestionPage/QuestionPage";
 import AnswerPage from "../pages/answer";
 import MainPage from "../pages/mainPage";
+import ProfilePage from "../components/ProfilePage/ProfilePage";
+import EditProfile from "../components/EditProfile/EditProfile";
 
 export const router = createBrowserRouter([
   {
     path: "/",
-    element: <Navigate to="/auth/login" replace />, // Redirect to login by default
+    element: <Navigate to="/auth/login" replace />,
   },
   {
     path: "/auth",
@@ -27,23 +26,19 @@ export const router = createBrowserRouter([
     ],
   },
   {
-      path : "/me",
-      element : <Me />,
+    path: "/me",
+    element: <ProfilePage />,
   },
   {
-      path : "/editProfile",
-      element : <EditProfile />,
-  },
-  {
-    path: "/questions",
-    element: <QuestionList />,
+    path: "/editProfile",
+    element: <EditProfile />,
   },
   {
     path: "/questions/new",
     element: <QuestionPage />, 
   },
   {
-    path: "/questions/:id", // detail per pertanyaan
+    path: "/questions/:id",
     element: <AnswerPage />,
   },
   {

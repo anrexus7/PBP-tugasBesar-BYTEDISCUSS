@@ -484,21 +484,6 @@ const reloadAllData = async () => {
                     </div>
                   ) : (
                     <>
-                      <div className="vote-section">
-                        <button 
-                          className={`vote-btn upvote ${userVotes[`a-${answer.id}`] === 1 ? 'active' : ''}`}
-                          onClick={() => handleAnswerVote(answer.id, 1)}
-                        >
-                          <FaThumbsUp />
-                        </button>
-                        <span className="vote-count">{answer.voteCount ?? 0}</span>
-                        <button 
-                          className={`vote-btn downvote ${userVotes[`a-${answer.id}`] === -1 ? 'active' : ''}`}
-                          onClick={() => handleAnswerVote(answer.id, -1)}
-                        >
-                          <FaThumbsDown />
-                        </button>
-                      </div>
                       
                       <div className="answer-text">
                         <p>{answer.content}</p>
