@@ -38,7 +38,7 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
-.home-container {
+.homeContainer {
   display: flex;
   flex-direction: column;
   min-height: 100vh;
@@ -73,14 +73,14 @@ body {
   color: var(--primary-hover);
 }
 
-.search-bar {
+.searchBar {
   position: relative;
   flex-grow: 1;
   max-width: 700px;
   margin: 0 2rem;
 }
 
-.search-bar input {
+.searchBar input {
   width: 100%;
   padding: 0.625rem 1rem 0.625rem 2.75rem;
   border: 1px solid var(--border-color);
@@ -91,17 +91,17 @@ body {
   color: var(--text-color);
 }
 
-.search-bar input:focus {
+.searchBar input:focus {
   outline: none;
   border-color: var(--primary-color);
   box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
 }
 
-.search-bar input::placeholder {
+.searchBar input::placeholder {
   color: var(--text-secondary);
 }
 
-.search-icon {
+.searchIcon {
   position: absolute;
   left: 1rem;
   top: 50%;
@@ -111,13 +111,13 @@ body {
 }
 
 /* Auth Buttons */
-.auth-buttons {
+.authButtons {
   display: flex;
   gap: 1rem;
   align-items: center;
 }
 
-.auth-buttons a {
+.authButtons a {
   padding: 0.625rem 1.25rem;
   border-radius: var(--radius-md);
   text-decoration: none;
@@ -129,32 +129,32 @@ body {
   font-size: 0.9375rem;
 }
 
-.login-button {
+.loginButton {
   color: var(--primary-color);
   border: 1px solid var(--primary-color);
   background-color: transparent;
 }
 
-.login-button:hover {
+.loginButton:hover {
   background-color: rgba(37, 99, 235, 0.05);
 }
 
-.register-button {
+.registerButton {
   background-color: var(--primary-color);
   color: white;
   border: 1px solid var(--primary-color);
 }
 
-.register-button:hover {
+.registerButton:hover {
   background-color: var(--primary-hover);
 }
 
 /* Profile Dropdown */
-.profile-dropdown-container {
+.profileDropdownContainer {
   position: relative;
 }
 
-.profile-button {
+.profileButton {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -168,18 +168,18 @@ body {
   padding: 0;
 }
 
-.profile-button:hover {
+.profileButton:hover {
   background-color: rgba(0, 0, 0, 0.05);
 }
 
-.profile-picture {
+.profilePicture {
   width: 100%;
   height: 100%;
   border-radius: 50%;
   object-fit: cover;
 }
 
-.profile-dropdown {
+.profileDropdown {
   position: absolute;
   right: 0;
   top: calc(100% + 0.5rem);
@@ -195,13 +195,13 @@ body {
   transition: var(--transition);
 }
 
-.profile-dropdown-container:hover .profile-dropdown {
+.profileDropdownContainer:hover .profileDropdown {
   opacity: 1;
   visibility: visible;
   transform: translateY(0);
 }
 
-.dropdown-item {
+.dropdownItem {
   padding: 0.75rem 1rem;
   text-decoration: none;
   display: flex;
@@ -217,17 +217,17 @@ body {
   cursor: pointer;
 }
 
-.dropdown-item:hover {
+.dropdownItem:hover {
   background-color: rgba(0, 0, 0, 0.05);
 }
 
-.dropdown-item svg {
+.dropdownItem svg {
   width: 16px;
   height: 16px;
 }
 
 /* Main Content */
-.main-content {
+.mainContent {
   display: flex;
   flex-grow: 1;
   padding: 2rem;
@@ -238,7 +238,7 @@ body {
 }
 
 /* Sidebar */
-.sidebar-fixed {
+.sidebarFixed {
   width: 280px;
   position: sticky;
   top: 80px;
@@ -246,7 +246,7 @@ body {
   align-self: flex-start;
 }
 
-.sidebar-section {
+.sidebarSection {
   margin-bottom: 1.5rem;
   background-color: var(--card-bg);
   padding: 1.5rem;
@@ -255,7 +255,7 @@ body {
   border: 1px solid var(--border-color);
 }
 
-.sidebar-section h3 {
+.sidebarSection h3 {
   margin-bottom: 1rem;
   font-size: 1.125rem;
   color: var(--text-color);
@@ -264,7 +264,7 @@ body {
   border-bottom: 1px solid var(--border-color);
 }
 
-.tags-list {
+.tagsList {
   display: flex;
   flex-wrap: wrap;
   gap: 0.5rem;
@@ -273,22 +273,22 @@ body {
   padding: 0.5rem;
 }
 
-.tags-list::-webkit-scrollbar {
+.tagsList::-webkit-scrollbar {
   width: 6px;
   height: 6px;
 }
 
-.tags-list::-webkit-scrollbar-track {
+.tagsList::-webkit-scrollbar-track {
   background: var(--border-color);
   border-radius: 10px;
 }
 
-.tags-list::-webkit-scrollbar-thumb {
+.tagsList::-webkit-scrollbar-thumb {
   background: var(--text-secondary);
   border-radius: 10px;
 }
 
-.tags-list::-webkit-scrollbar-thumb:hover {
+.tagsList::-webkit-scrollbar-thumb:hover {
   background: var(--text-color);
 }
 
@@ -315,7 +315,7 @@ body {
   color: white;
 }
 
-.ask-button {
+.askButton {
   display: block;
   padding: 0.75rem 1rem;
   background-color: var(--primary-color);
@@ -332,37 +332,37 @@ body {
   width: 100%;
 }
 
-.ask-button:hover {
+.askButton:hover {
   background-color: var(--primary-hover);
   box-shadow: var(--shadow-sm);
 }
 
 /* Questions List */
-.questions-list {
+.questionsList {
   flex-grow: 1;
   min-width: 0;
 }
 
-.questions-header {
+.questionsHeader {
   margin-bottom: 1.5rem;
   padding-bottom: 1rem;
   border-bottom: 1px solid var(--border-color);
 }
 
-.questions-header h1 {
+.questionsHeader h1 {
   font-size: 1.75rem;
   margin-bottom: 0.5rem;
   font-weight: 700;
   color: var(--text-color);
 }
 
-.questions-header p {
+.questionsHeader p {
   color: var(--text-secondary);
   font-size: 0.9375rem;
 }
 
 /* Question Card */
-.question-card {
+.questionCard {
   border: 1px solid var(--border-color);
   padding: 1.5rem;
   margin-bottom: 1rem;
@@ -372,46 +372,46 @@ body {
   transition: var(--transition);
 }
 
-.question-card:hover {
+.questionCard:hover {
   box-shadow: var(--shadow-md);
   transform: translateY(-2px);
 }
 
-.question-title {
+.questionTitle {
   font-size: 1.25rem;
   margin-bottom: 0.75rem;
   color: var(--primary-color);
   line-height: 1.3;
 }
 
-.question-title a {
+.questionTitle a {
   text-decoration: none;
   color: inherit;
   transition: var(--transition);
 }
 
-.question-title a:hover {
+.questionTitle a:hover {
   color: var(--primary-hover);
   text-decoration: underline;
 }
 
-.question-content {
+.questionContent {
   font-size: 0.9375rem;
   color: var(--text-color);
   margin-bottom: 1rem;
   line-height: 1.6;
-  word-wrap: break-word; /* Memastikan kata panjang bisa dipotong */
-  overflow-wrap: break-word; /* Alternatif untuk word-wrap */
-  white-space: pre-wrap; /* Mempertahankan line breaks dan whitespace */
-  max-height: 200px; /* Batas tinggi maksimal */
-  overflow: hidden; /* Sembunyikan konten yang melebihi */
-  text-overflow: ellipsis; /* Tambahkan ellipsis jika konten dipotong */
-  display: -webkit-box; /* Untuk line clamping */
-  -webkit-line-clamp: 6; /* Jumlah baris maksimal */
-  -webkit-box-orient: vertical; /* Orientasi vertikal untuk line clamping */
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+  white-space: pre-wrap;
+  max-height: 200px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: -webkit-box;
+  -webkit-line-clamp: 6;
+  -webkit-box-orient: vertical;
 }
 
-.question-stats {
+.questionStats {
   display: flex;
   justify-content: flex-start;
   gap: 1.5rem;
@@ -437,36 +437,36 @@ body {
   color: var(--text-color);
 }
 
-.stat.has-answers {
+.stat.hasAnswers {
   border: 1px solid var(--success-color);
   color: var(--success-color);
   background-color: rgba(16, 185, 129, 0.05);
 }
 
-.stat.has-accepted {
+.stat.hasAccepted {
   border: 1px solid var(--success-color);
   background-color: rgba(16, 185, 129, 0.1);
   color: var(--success-color);
 }
 
-.vote-container {
+.voteContainer {
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: 4px;
 }
 
-.vote-count {
+.voteCount {
   font-size: 1.2rem;
   font-weight: bold;
 }
 
-.vote-label {
+.voteLabel {
   font-size: 0.8rem;
   color: var(--text-secondary);
 }
 
-.vote-button {
+.voteButton {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -482,34 +482,34 @@ body {
   width: 100%;
 }
 
-.vote-button:hover {
+.voteButton:hover {
   background-color: rgba(0, 0, 0, 0.02);
 }
 
-.vote-button.upvote:hover {
+.voteButton.upvote:hover {
   color: var(--upvote-color);
   border-color: var(--upvote-color);
 }
 
-.vote-button.downvote:hover {
+.voteButton.downvote:hover {
   color: var(--downvote-color);
   border-color: var(--downvote-color);
 }
 
-.vote-button.active.upvote {
+.voteButton.active.upvote {
   background-color: var(--upvote-color);
   color: white;
   border-color: var(--upvote-color);
 }
 
-.vote-button.active.downvote {
+.voteButton.active.downvote {
   background-color: var(--downvote-color);
   color: white;
   border-color: var(--downvote-color);
 }
 
 /* Question Footer */
-.question-footer {
+.questionFooter {
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -525,7 +525,7 @@ body {
   align-items: center;
 }
 
-.question-meta {
+.questionMeta {
   display: flex;
   align-items: center;
   gap: 0.5rem;
@@ -533,7 +533,7 @@ body {
   font-size: 0.8125rem;
 }
 
-.user-avatar {
+.userAvatar {
   width: 28px;
   height: 28px;
   border-radius: 50%;
@@ -542,7 +542,7 @@ body {
   transition: var(--transition);
 }
 
-.user-avatar:hover {
+.userAvatar:hover {
   transform: scale(1.1);
   border-color: var(--primary-color);
 }
@@ -559,7 +559,7 @@ body {
 }
 
 /* Empty State */
-.no-questions {
+.noQuestions {
   text-align: center;
   padding: 3rem;
   background-color: var(--card-bg);
@@ -568,7 +568,7 @@ body {
   border: 1px solid var(--border-color);
 }
 
-.no-questions p {
+.noQuestions p {
   font-size: 1.125rem;
   margin-bottom: 1.5rem;
   color: var(--text-secondary);
@@ -593,17 +593,17 @@ body {
 
 /* Responsive Adjustments */
 @media (max-width: 1024px) {
-  .main-content {
+  .mainContent {
     flex-direction: column;
   }
   
-  .sidebar-fixed {
+  .sidebarFixed {
     width: 100%;
     position: static;
     margin-bottom: 2rem;
   }
   
-  .tags-list {
+  .tagsList {
     justify-content: flex-start;
   }
 }
@@ -615,17 +615,17 @@ body {
     gap: 1rem;
   }
   
-  .search-bar {
+  .searchBar {
     width: 100%;
     margin: 0;
   }
   
-  .auth-buttons {
+  .authButtons {
     width: 100%;
     justify-content: center;
   }
   
-  .question-stats {
+  .questionStats {
     flex-direction: row;
     justify-content: flex-start;
     margin-right: 0;
@@ -636,34 +636,34 @@ body {
     border-bottom: 1px solid var(--border-color);
   }
 
-  .vote-container {
+  .voteContainer {
     flex-direction: row;
     gap: 1rem;
   }
   
-  .main-content {
+  .mainContent {
     padding: 1.5rem;
   }
   
-  .question-footer {
+  .questionFooter {
     flex-direction: column;
     align-items: flex-start;
   }
   
-  .question-meta {
+  .questionMeta {
     width: 100%;
     justify-content: flex-end;
   }
 }
 
 @media (max-width: 480px) {
-  .question-footer {
+  .questionFooter {
     flex-direction: column;
     align-items: flex-start;
     gap: 1rem;
   }
   
-  .question-meta {
+  .questionMeta {
     text-align: left;
     width: 100%;
   }
@@ -672,11 +672,11 @@ body {
     padding: 0.75rem;
   }
   
-  .main-content {
+  .mainContent {
     padding: 1rem;
   }
   
-  .user-avatar {
+  .userAvatar {
     width: 24px;
     height: 24px;
   }
@@ -688,7 +688,7 @@ body {
 
 /* Untuk tampilan mobile */
 @media (max-width: 768px) {
-  .question-content {
+  .questionContent {
     max-height: 150px;
     -webkit-line-clamp: 4;
   }
@@ -696,8 +696,102 @@ body {
 
 /* Untuk tampilan sangat kecil */
 @media (max-width: 480px) {
-  .question-content {
+  .questionContent {
     max-height: 120px;
     -webkit-line-clamp: 3;
   }
+}
+
+.tagsContainer {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.tag {
+  padding: 4px 8px;
+  background-color: #e1ecf4;
+  color: #39739d;
+  border-radius: 3px;
+  font-size: 12px;
+  cursor: pointer;
+  border: none;
+  transition: all 0.2s;
+}
+
+.tag:hover {
+  background-color: #d0e3f1;
+  color: #2c5777;
+}
+
+.tag.active {
+  background-color: #39739d;
+  color: white;
+}
+
+.questionTags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 10px 0;
+}
+
+.questionTags .tag {
+  cursor: pointer;
+}
+
+.selectedTags {
+  margin-top: 15px;
+  padding: 10px;
+  background-color: #f8f9fa;
+  border-radius: 5px;
+}
+
+.selectedTags h4 {
+  margin-bottom: 8px;
+  font-size: 14px;
+  color: #555;
+}
+
+.selectedTagsList {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+.selectedTag {
+  display: flex;
+  align-items: center;
+  padding: 4px 8px;
+  background-color: #e1ecf4;
+  color: #39739d;
+  border-radius: 3px;
+  font-size: 12px;
+}
+
+.removeTag {
+  background: none;
+  border: none;
+  color: #39739d;
+  margin-left: 5px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  padding: 0;
+}
+
+.clearTags {
+  background: none;
+  border: none;
+  color: #39739d;
+  text-decoration: underline;
+  cursor: pointer;
+  font-size: 12px;
+  padding: 0;
+}
+
+.clearTags:hover {
+  color: #2c5777;
 }

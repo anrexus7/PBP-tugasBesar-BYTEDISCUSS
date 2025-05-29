@@ -1,148 +1,46 @@
-import React, { useState, useEffect } from 'react';
-import '../css/login.css';
-import { Link, useNavigate } from "react-router-dom";
-import { FaUser, FaLock, FaEnvelope, FaEye, FaEyeSlash } from 'react-icons/fa';
+import React from 'react';
+import { Link } from "react-router-dom";
+import { FaUser, FaEnvelope } from 'react-icons/fa';
+import styles from '../components/auth/Login/Login.module.css';
+import PasswordInput from '../components/common/PasswordInput/PasswordInput';
+import { useRegister } from '../components/auth/Register/useRegister';
 
 const Register: React.FC = () => {
-  const [formData, setFormData] = useState({
-    username: '',
-    email: '',
-    password: '',
-  });
-
-  const [errors, setErrors] = useState({
-    username: '',
-    email: '',
-    password: '',
-  });
-
-  const [showPassword, setShowPassword] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
-  const [message, setMessage] = useState('');
-  const [isError, setIsError] = useState(false);
-  const navigate = useNavigate();
-
-  useEffect(() => {
-    const token = localStorage.getItem('token');
-    if (token) {
-      navigate('/mainPage');
-    }
-  }, [navigate]);
-
-  const validateForm = () => {
-    let valid = true;
-    const newErrors = {
-      username: '',
-      email: '',
-      password: '',
-    };
-
-    if (!formData.username) {
-      newErrors.username = 'Username is required';
-      valid = false;
-    } else if (formData.username.length < 3) {
-      newErrors.username = 'Username must be at least 3 characters';
-      valid = false;
-    }
-
-    if (!formData.email) {
-      newErrors.email = 'Email is required';
-      valid = false;
-    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
-      newErrors.email = 'Please enter a valid email';
-      valid = false;
-    }
-
-    if (!formData.password) {
-      newErrors.password = 'Password is required';
-      valid = false;
-    } else if (formData.password.length < 6) {
-      newErrors.password = 'Password must be at least 6 characters';
-      valid = false;
-    }
-
-    setErrors(newErrors);
-    return valid;
-  };
-
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target;
-    setFormData({
-      ...formData,
-      [name]: value,
-    });
-    
-    // Clear error when user types
-    if (errors[name as keyof typeof errors]) {
-      setErrors({
-        ...errors,
-        [name]: '',
-      });
-    }
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    
-    if (!validateForm()) {
-      return;
-    }
-
-    setIsLoading(true);
-    setIsError(false);
-    setMessage('');
-
-    try {
-      const response = await fetch('http://localhost:5000/api/auth/register', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(formData),
-      });
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.message || 'Registration failed');
-      }
-
-      setMessage('Registration successful! Redirecting to login...');
-      setIsError(false);
-
-      setTimeout(() => {
-        navigate('/auth/login');
-      }, 1500);
-
-    } catch (err: any) {
-      setMessage(err.message);
-      setIsError(true);
-    } finally {
-      setIsLoading(false);
-    }
-  };
+  const {
+    formData,
+    errors,
+    showPassword,
+    isLoading,
+    message,
+    isError,
+    handleChange,
+    handleSubmit,
+    setShowPassword,
+  } = useRegister();
 
   return (
-    <div className="login-container">
-      <div className="login-background">
-        <div className="shape"></div>
-        <div className="shape"></div>
+    <div className={styles.container}>
+      <div className={styles.background}>
+        <div className={styles.shape}></div>
+        <div className={styles.shape}></div>
       </div>
       
-      <div className="login-card">
-        <div className="login-header">
-          <div className="logo">
-            <img src="/logo.png" alt="Forum Logo" />
+      <div className={styles.card}>
+        <div className={styles.header}>
+          <div className={styles.logo}>
+            <img src="logo.jpeg" alt="Forum Logo" />
           </div>
-          <h1>Join Our Developer Community</h1>
-          <p>Create an account to ask questions and contribute</p>
+          <h1 className={styles.title}>Join Our Developer Community</h1>
+          <p className={styles.subtitle}>Create an account to ask questions and contribute</p>
         </div>
 
-        <form className="login-form" onSubmit={handleSubmit}>
-          <div className={`form-group ${errors.username ? 'error' : ''}`}>
-            <label htmlFor="username">Username</label>
-            <div className="input-container">
-              <FaUser className="input-icon" />
+        <form className={styles.form} onSubmit={handleSubmit}>
+          <div className={`${styles.formGroup} ${errors.username ? styles.formGroupError : ''}`}>
+            <label htmlFor="username" className={styles.label}>Username</label>
+            <div className={styles.inputContainer}>
+              <div className={styles.inputIcon}>
+                <FaUser />
+              </div>
               <input
                 id="username"
                 name="username"
@@ -150,15 +48,18 @@ const Register: React.FC = () => {
                 placeholder="Choose a username"
                 value={formData.username}
                 onChange={handleChange}
+                className={styles.input}
               />
             </div>
-            {errors.username && <span className="error-message">{errors.username}</span>}
+            {errors.username && <span className={styles.errorMessage}>{errors.username}</span>}
           </div>
 
-          <div className={`form-group ${errors.email ? 'error' : ''}`}>
-            <label htmlFor="email">Email Address</label>
-            <div className="input-container">
-              <FaEnvelope className="input-icon" />
+          <div className={`${styles.formGroup} ${errors.email ? styles.formGroupError : ''}`}>
+            <label htmlFor="email" className={styles.label}>Email Address</label>
+            <div className={styles.inputContainer}>
+              <div className={styles.inputIcon}>
+                <FaEnvelope />
+              </div>
               <input
                 id="email"
                 name="email"
@@ -166,15 +67,18 @@ const Register: React.FC = () => {
                 placeholder="Enter your email"
                 value={formData.email}
                 onChange={handleChange}
+                className={styles.input}
               />
             </div>
-            {errors.email && <span className="error-message">{errors.email}</span>}
+            {errors.email && <span className={styles.errorMessage}>{errors.email}</span>}
           </div>
 
-          <div className={`form-group ${errors.password ? 'error' : ''}`}>
-            <label htmlFor="password">Password</label>
-            <div className="input-container">
-              <FaLock className="input-icon" />
+          <div className={`${styles.formGroup} ${errors.password ? styles.formGroupError : ''}`}>
+            <label htmlFor="password" className={styles.label}>Password</label>
+            <div className={styles.inputContainer}>
+              <div className={styles.inputIcon}>
+                <FaEnvelope />
+              </div>
               <input
                 id="password"
                 name="password"
@@ -182,39 +86,50 @@ const Register: React.FC = () => {
                 placeholder="Create a password (min 6 characters)"
                 value={formData.password}
                 onChange={handleChange}
+                className={styles.input}
               />
               <button 
                 type="button" 
-                className="password-toggle"
+                className={styles.passwordToggle}
                 onClick={() => setShowPassword(!showPassword)}
+                aria-label={showPassword ? "Hide password" : "Show password"}
               >
-                {showPassword ? <FaEyeSlash /> : <FaEye />}
+                {showPassword ? (
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21" />
+                  </svg>
+                ) : (
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                  </svg>
+                )}
               </button>
             </div>
-            {errors.password && <span className="error-message">{errors.password}</span>}
+            {errors.password && <span className={styles.errorMessage}>{errors.password}</span>}
           </div>
 
           <button 
             type="submit" 
-            className="login-button"
+            className={styles.button}
             disabled={isLoading}
           >
             {isLoading ? (
-              <span className="spinner"></span>
+              <span className={styles.spinner}></span>
             ) : (
               'Create Account'
             )}
           </button>
 
           {message && (
-            <div className={`message ${isError ? 'error' : 'success'}`}>
+            <div className={`${styles.message} ${isError ? styles.messageError : styles.messageSuccess}`}>
               {message}
             </div>
           )}
 
-          <div className="login-footer">
+          <div className={styles.footer}>
             <p>Already have an account? <Link to="/auth/login">Log in</Link></p>
-            <p className="terms-notice">
+            <p className={styles.termsNotice}>
               By registering, you agree to our <Link to="/terms">Terms of Service</Link> and <Link to="/privacy">Privacy Policy</Link>
             </p>
           </div>

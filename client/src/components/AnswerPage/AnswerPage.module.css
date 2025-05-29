@@ -1,23 +1,23 @@
-.question-detail-container {
+.questionDetailContainer {
   max-width: 800px;
   margin: 0 auto;
   padding: 2rem 1rem;
   font-family: 'Inter', sans-serif;
 }
 
-.question-header {
+.questionHeader {
   margin-bottom: 2rem;
   padding-bottom: 1rem;
   border-bottom: 1px solid #e5e7eb;
 }
 
-.question-header h1 {
+.questionHeader h1 {
   font-size: 1.8rem;
   margin-bottom: 1rem;
   color: #1f2937;
 }
 
-.question-meta {
+.questionMeta {
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -25,13 +25,13 @@
   color: #6b7280;
 }
 
-.user-info {
+.userInfo {
   display: flex;
   align-items: center;
   gap: 0.5rem;
 }
 
-.user-avatar {
+.userAvatar {
   width: 32px;
   height: 32px;
   border-radius: 50%;
@@ -39,13 +39,13 @@
   border: 1px solid #e5e7eb;
 }
 
-.question-content-container {
+.questionContentContainer {
   display: flex;
   gap: 1.5rem;
   margin-bottom: 3rem;
 }
 
-.vote-section {
+.voteSection {
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -53,7 +53,7 @@
   min-width: 40px;
 }
 
-.vote-btn {
+.voteBtn {
   background: none;
   border: none;
   cursor: pointer;
@@ -64,56 +64,56 @@
   transition: all 0.2s;
 }
 
-.vote-btn:hover {
+.voteBtn:hover {
   background-color: #f3f4f6;
 }
 
-.vote-btn.upvote:hover {
+.voteBtn.upvote:hover {
   color: #10b981;
 }
 
-.vote-btn.downvote:hover {
+.voteBtn.downvote:hover {
   color: #ef4444;
 }
 
-.vote-count {
+.voteCount {
   font-weight: 600;
   font-size: 1.1rem;
 }
 
-.question-content {
+.questionContent {
   flex: 1;
 }
 
-.question-content p {
+.questionContent p {
   line-height: 1.6;
   white-space: pre-wrap;
 }
 
-.answers-section {
+.answersSection {
   margin-top: 2rem;
 }
 
-.answers-section h2 {
+.answersSection h2 {
   font-size: 1.5rem;
   margin-bottom: 1.5rem;
   padding-bottom: 0.5rem;
   border-bottom: 1px solid #e5e7eb;
 }
 
-.no-answers {
+.noAnswers {
   text-align: center;
   color: #6b7280;
   margin: 2rem 0;
 }
 
-.answers-list {
+.answersList {
   display: flex;
   flex-direction: column;
   gap: 2rem;
 }
 
-.answer-card {
+.answerCard {
   display: flex;
   gap: 1.5rem;
   padding: 1.5rem;
@@ -122,28 +122,28 @@
   background-color: #ffffff;
 }
 
-.answer-card.accepted {
+.answerCard.accepted {
   border-color: #10b981;
   background-color: rgba(16, 185, 129, 0.05);
 }
 
-.accepted-badge {
+.acceptedBadge {
   color: #10b981;
   font-size: 1.2rem;
   margin-top: 0.5rem;
 }
 
-.answer-content {
+.answerContent {
   flex: 1;
 }
 
-.answer-content p {
+.answerContent p {
   line-height: 1.6;
   white-space: pre-wrap;
   margin-bottom: 1rem;
 }
 
-.answer-footer {
+.answerFooter {
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -151,12 +151,12 @@
   color: #6b7280;
 }
 
-.answer-actions {
+.answerActions {
   display: flex;
   gap: 1rem;
 }
 
-.answer-actions button {
+.answerActions button {
   display: flex;
   align-items: center;
   gap: 0.3rem;
@@ -170,19 +170,19 @@
   transition: all 0.2s;
 }
 
-.answer-actions button:hover {
+.answerActions button:hover {
   background-color: #f3f4f6;
 }
 
-.edit-btn:hover {
+.editBtn:hover {
   color: #2563eb;
 }
 
-.delete-btn:hover {
+.deleteBtn:hover {
   color: #ef4444;
 }
 
-.edit-answer-form textarea {
+.editAnswerForm textarea {
   width: 100%;
   padding: 0.75rem;
   border: 1px solid #e5e7eb;
@@ -194,12 +194,12 @@
   min-height: 150px;
 }
 
-.edit-actions {
+.editActions {
   display: flex;
   gap: 1rem;
 }
 
-.edit-actions button {
+.editActions button {
   padding: 0.5rem 1rem;
   border-radius: 6px;
   font-weight: 500;
@@ -207,36 +207,36 @@
   transition: all 0.2s;
 }
 
-.save-btn {
+.saveBtn {
   background-color: #2563eb;
   color: white;
   border: none;
 }
 
-.save-btn:hover {
+.saveBtn:hover {
   background-color: #1d4ed8;
 }
 
-.cancel-btn {
+.cancelBtn {
   background: none;
   border: 1px solid #e5e7eb;
   color: #6b7280;
 }
 
-.cancel-btn:hover {
+.cancelBtn:hover {
   background-color: #f3f4f6;
 }
 
-.new-answer-form {
+.newAnswerForm {
   margin-top: 3rem;
 }
 
-.new-answer-form h3 {
+.newAnswerForm h3 {
   font-size: 1.2rem;
   margin-bottom: 1rem;
 }
 
-.new-answer-form textarea {
+.newAnswerForm textarea {
   width: 100%;
   padding: 1rem;
   border: 1px solid #e5e7eb;
@@ -248,7 +248,7 @@
   min-height: 200px;
 }
 
-.submit-answer-btn {
+.submitAnswerBtn {
   display: flex;
   align-items: center;
   gap: 0.5rem;
@@ -262,7 +262,7 @@
   transition: all 0.2s;
 }
 
-.submit-answer-btn:hover {
+.submitAnswerBtn:hover {
   background-color: #1d4ed8;
 }
 
@@ -277,36 +277,34 @@
 }
 
 @media (max-width: 768px) {
-  .question-content-container {
+  .questionContentContainer {
     flex-direction: column;
     gap: 1rem;
   }
   
-  .vote-section {
+  .voteSection {
     flex-direction: row;
     justify-content: flex-start;
   }
   
-  .answer-card {
+  .answerCard {
     flex-direction: column;
     gap: 1rem;
   }
   
-  .answer-footer {
+  .answerFooter {
     flex-direction: column;
     align-items: flex-start;
     gap: 1rem;
   }
   
-  .answer-actions {
+  .answerActions {
     width: 100%;
     justify-content: flex-end;
   }
 }
 
-/* Add these styles to your existing CSS */
-
-.accepted-badge {
+.acceptedBadge {
   background-color: #10b981;
   color: white;
   padding: 0.25rem 0.5rem;
@@ -318,7 +316,7 @@
   margin-bottom: 1rem;
 }
 
-.comments-section {
+.commentsSection {
   margin-top: 1.5rem;
   border-top: 1px solid #e5e7eb;
   padding-top: 1rem;
@@ -331,23 +329,23 @@
   margin-bottom: 0.75rem;
 }
 
-.comment-content {
+.commentContent {
   font-size: 0.9rem;
   margin-bottom: 0.5rem;
 }
 
-.comment-meta {
+.commentMeta {
   display: flex;
   gap: 0.75rem;
   font-size: 0.8rem;
   color: #6b7280;
 }
 
-.new-comment-form {
+.newCommentForm {
   margin-top: 1rem;
 }
 
-.new-comment-form textarea {
+.newCommentForm textarea {
   width: 100%;
   padding: 0.5rem;
   border: 1px solid #e5e7eb;
@@ -358,7 +356,7 @@
   margin-bottom: 0.5rem;
 }
 
-.post-comment-btn {
+.postCommentBtn {
   background: none;
   border: none;
   color: #2563eb;
@@ -371,13 +369,11 @@
   border-radius: 4px;
 }
 
-.post-comment-btn:hover {
+.postCommentBtn:hover {
   background-color: #f3f4f6;
 }
 
-
-
-.vote-section {
+.voteSection {
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -385,7 +381,7 @@
   min-width: 40px;
 }
 
-.vote-btn {
+.voteBtn {
   background: none;
   border: none;
   cursor: pointer;
@@ -394,37 +390,37 @@
   padding: 5px;
 }
 
-.vote-btn:hover {
+.voteBtn:hover {
   color: #f48024;
 }
 
-.vote-btn.upvote.active {
-  color: #f48024;
+.voteBtn.upvote.active {
+  color: #0177ee;
 }
 
-.vote-btn.downvote.active {
-  color: #6a737c;
+.voteBtn.downvote.active {
+  color: #0177ee;
 }
 
-.vote-count {
+.voteCount {
   font-size: 1.2rem;
   font-weight: bold;
   margin: 5px 0;
 }
 
-.user-avatar {
+.userAvatar {
   width: 32px;
   height: 32px;
   border-radius: 50%;
   margin-right: 8px;
 }
 
-.user-avatar.small {
+.userAvatar.small {
   width: 24px;
   height: 24px;
 }
 
-.user-info {
+.userInfo {
   display: flex;
   align-items: center;
   font-size: 0.9rem;
@@ -437,47 +433,6 @@
   font-size: 0.8rem;
 }
 
-/* Tambahkan di file CSS Anda */
-.vote-section {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  margin-right: 15px;
-  min-width: 40px;
-}
-
-.vote-btn {
-  background: none;
-  border: none;
-  cursor: pointer;
-  font-size: 1.2rem;
-  color: #6a737c;
-  padding: 5px;
-}
-
-.vote-btn:hover {
-  color: #f48024;
-}
-
-.vote-btn.active {
-  color: #f48024;
-}
-
-.vote-count {
-  font-size: 1.2rem;
-  font-weight: bold;
-  margin: 5px 0;
-}
-
-.upvote.active {
-  color: #f48024;
-}
-
-.downvote.active {
-  color: #7193ff;
-}
-
-/* answer.css */
 .comment {
   margin: 10px 0;
   padding: 10px;
@@ -491,7 +446,7 @@
   background-color: #f5f5f5;
 }
 
-.comment-meta {
+.commentMeta {
   display: flex;
   align-items: center;
   margin-top: 8px;
@@ -499,13 +454,13 @@
   color: #666;
 }
 
-.comment-actions {
+.commentActions {
   margin-left: auto;
   display: flex;
   gap: 8px;
 }
 
-.comment-actions button {
+.commentActions button {
   background: none;
   border: none;
   cursor: pointer;
@@ -513,11 +468,11 @@
   padding: 2px 5px;
 }
 
-.comment-actions button:hover {
+.commentActions button:hover {
   color: #333;
 }
 
-.edit-comment-form textarea {
+.editCommentForm textarea {
   width: 100%;
   padding: 8px;
   border: 1px solid #ddd;
@@ -525,18 +480,18 @@
   margin-bottom: 8px;
 }
 
-.comment-edit-actions {
+.commentEditActions {
   display: flex;
   gap: 8px;
   margin-top: 8px;
 }
 
-.reply-form {
+.replyForm {
   margin-top: 10px;
   padding-left: 10px;
 }
 
-.reply-form textarea {
+.replyForm textarea {
   width: 100%;
   padding: 8px;
   border: 1px solid #ddd;
@@ -544,7 +499,7 @@
   margin-bottom: 8px;
 }
 
-.post-reply-btn {
+.postReplyBtn {
   background-color: #f0f0f0;
   border: 1px solid #ddd;
   padding: 4px 8px;
@@ -556,11 +511,11 @@
   gap: 4px;
 }
 
-.post-reply-btn:hover {
+.postReplyBtn:hover {
   background-color: #e0e0e0;
 }
 
-.error-message {
+.errorMessage {
   color: #d32f2f;
   font-size: 0.8em;
   margin-top: 4px;

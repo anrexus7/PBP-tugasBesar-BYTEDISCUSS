@@ -61,11 +61,25 @@ export const updateComment = controllerWrapper(async (req: Request, res: Respons
   if (!comment) {
     return next(new ApiError(404, 'Comment not found or you are unauthorized to update this comment'));
   }
+
+  // Check if user is the owner of the comment
+  if (comment.userId !== userId) {
+    res.status(403).json({ message: 'You are not authorized to edit this comment' });
+    return;
+  }
+
   // Update comment
   comment.content = content;
   await comment.save();
 
-  res.status(200).json(comment);
+  const updatedComment = await Comment.findByPk(comment.id, {
+      include: [{
+        model: User,
+        attributes: ['id', 'username', 'profilePicture']
+      }]
+    });
+
+    res.json(updatedComment);
 });
 
 export const deleteComment = controllerWrapper(async (req: Request, res: Response, next: NextFunction) => {
@@ -81,6 +95,13 @@ export const deleteComment = controllerWrapper(async (req: Request, res: Respons
   if (!comment) {
     return next(new ApiError(404, 'Comment not found or you are unauthorized to delete this comment'));
   }
+
+  // Check if user is the owner of the comment
+    if (comment.userId !== userId) {
+      res.status(403).json({ message: 'You are not authorized to delete this comment' });
+      return;
+    }
+
   // Delete comment
   await comment.destroy();
 

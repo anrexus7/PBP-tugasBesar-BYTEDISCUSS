@@ -3,14 +3,14 @@ import { useNavigate } from 'react-router-dom';
 import { 
     FaEdit, FaTrash, FaTag 
 } from 'react-icons/fa';
-import styles from './QuestionPage.module.css';
+import styles from '../components/QuestionPage/QuestionPage.module.css';
 import { 
   Question, Tag, QuestionFormData 
-} from './types';
+} from '../components/QuestionPage/types';
 import { 
   fetchQuestions, fetchTags, createQuestion, 
   updateQuestion, deleteQuestion, createTag 
-} from './api';
+} from '../components/QuestionPage/api';
 
 const QuestionPage: React.FC = () => {
   const [questions, setQuestions] = useState<Question[]>([]);

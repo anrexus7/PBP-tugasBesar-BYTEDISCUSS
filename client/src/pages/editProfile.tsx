@@ -1,9 +1,13 @@
-import React, { useState, useEffect, useRef } from 'react';
-import '../css/editProfile.css';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useNavigate } from "react-router-dom";
+import axios from 'axios';
+import styles from '../components/EditProfile/EditProfile.module.css';
+import { EditProfileFormData, OriginalData } from '../components/EditProfile/types';
+
+const API_BASE_URL = 'http://localhost:5000/api';
 
 const EditProfile: React.FC = () => {
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<EditProfileFormData>({
     username: '',
     email: '',
     bio: '',
@@ -14,78 +18,62 @@ const EditProfile: React.FC = () => {
   const [profilePicture, setProfilePicture] = useState('defaultPic.png');
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
-  const [originalData, setOriginalData] = useState({
+  const [originalData, setOriginalData] = useState<OriginalData>({
     email: '',
     pass: '',
   });
-
   const [message, setMessage] = useState('');
   const [isError, setIsError] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const navigate = useNavigate();
 
-  // Fetch current user data
-  useEffect(() => {
-    const fetchUserData = async () => {
-      const token = localStorage.getItem('token');
+  const fetchUserData = useCallback(async () => {
+    const token = localStorage.getItem('token');
 
-      if (!token) {
-        setMessage('No token found. Please log in.');
-        setIsError(true);
-        navigate('/auth/login');
-        return;
-      }
+    if (!token) {
+      setMessage('No token found. Please log in.');
+      setIsError(true);
+      navigate('/auth/login');
+      return;
+    }
 
-      try {
-        setIsLoading(true);
-        const response = await fetch('http://localhost:5000/api/me', {
-          method: 'GET',
-          headers: {
-            'Authorization': `Bearer ${token}`,
-            'Content-Type': 'application/json',
-          },
-        });
+    try {
+      setIsLoading(true);
+      const response = await axios.get(`${API_BASE_URL}/me`, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        },
+      });
 
-        if (!response.ok) {
-          const errorData = await response.json();
-          throw new Error(errorData.message || 'Failed to fetch user data');
-        }
+      const { username, email, bio, profilePicture: picture } = response.data;
+      setFormData({
+        username: username || '',
+        email: email || '',
+        bio: bio || '',
+        currentPassword: '',
+        newPassword: '',
+      });
 
-        const data = await response.json();
-        setFormData({
-          username: data.username || '',
-          email: data.email || '',
-          bio: data.bio || '',
-          currentPassword: '',
-          newPassword: '',
-        });
+      const pictureUrl = picture || 'defaultPic.png';
+      setProfilePicture(pictureUrl);
+      setPreviewUrl(`${API_BASE_URL.replace('/api', '')}/uploads/${pictureUrl}`);
 
-        // Always set profile picture (default or user's)
-        if (data.profilePicture) {
-          setProfilePicture(data.profilePicture);
-          // Immediately show the current profile picture
-          setPreviewUrl(`http://localhost:5000/uploads/${data.profilePicture}`);
-        } 
-        else {
-          setProfilePicture('defaultPic.png');
-          setPreviewUrl(`http://localhost:5000/uploads/defaultPic.png`);
-        }
-
-        setOriginalData({
-          email: data.email || '',
-          pass: data.password || '',
-        });
-      } catch (err: any) {
-        setMessage(err.message);
-        setIsError(true);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    fetchUserData();
+      setOriginalData({
+        email: email || '',
+        pass: response.data.password || '',
+      });
+    } catch (err: any) {
+      setMessage(err.response?.data?.message || 'Failed to fetch user data');
+      setIsError(true);
+    } finally {
+      setIsLoading(false);
+    }
   }, [navigate]);
+
+  useEffect(() => {
+    fetchUserData();
+  }, [fetchUserData]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     setFormData({
@@ -95,11 +83,10 @@ const EditProfile: React.FC = () => {
   };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files[0]) {
+    if (e.target.files?.[0]) {
       const file = e.target.files[0];
       setSelectedFile(file);
 
-      // Create preview URL
       const reader = new FileReader();
       reader.onloadend = () => {
         setPreviewUrl(reader.result as string);
@@ -109,9 +96,7 @@ const EditProfile: React.FC = () => {
   };
 
   const triggerFileInput = () => {
-    if (fileInputRef.current) {
-      fileInputRef.current.click();
-    }
+    fileInputRef.current?.click();
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -128,73 +113,49 @@ const EditProfile: React.FC = () => {
     try {
       setIsLoading(true);
 
-      // First upload profile picture if selected
       if (selectedFile) {
         const formData = new FormData();
         formData.append('avatar', selectedFile);
 
-        const uploadResponse = await fetch('http://localhost:5000/api/me/avatar', {
-          method: 'PUT',
+        const uploadResponse = await axios.put(`${API_BASE_URL}/me/avatar`, formData, {
           headers: {
             'Authorization': `Bearer ${token}`,
+            'Content-Type': 'multipart/form-data',
           },
-          body: formData,
         });
 
-        if (!uploadResponse.ok) {
-          const errorData = await uploadResponse.json();
-          throw new Error(errorData.message || 'Failed to upload profile picture');
-        }
-
-        const uploadData = await uploadResponse.json();
-        setProfilePicture(uploadData.profilePicture);
-        // Update preview with the new uploaded image
-        setPreviewUrl(`http://localhost:5000/uploads/${uploadData.profilePicture}`);
+        const { profilePicture: newPicture } = uploadResponse.data;
+        setProfilePicture(newPicture);
+        setPreviewUrl(`${API_BASE_URL.replace('/api', '')}/uploads/${newPicture}`);
       }
 
-      // Then update other profile data
-      const response = await fetch('http://localhost:5000/api/me', {
-        method: 'PUT',
+      await axios.put(`${API_BASE_URL}/me`, {
+        username: formData.username,
+        email: formData.email,
+        bio: formData.bio,
+        currentPassword: formData.currentPassword,
+        newPassword: formData.newPassword,
+      }, {
         headers: {
           'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json',
         },
-        body: JSON.stringify({
-          username: formData.username,
-          email: formData.email,
-          bio: formData.bio,
-          currentPassword: formData.currentPassword,
-          newPassword: formData.newPassword,
-        }),
       });
 
-      if (!response.ok) {
-        const errorData = await response.json();
-        setIsError(true);
-        throw new Error(errorData.message || 'Failed to update profile');
-      }
-
-      const data = await response.json();
       setMessage('Profile updated successfully!');
       setIsError(false);
 
-      if (
-        (formData.email !== '' && formData.email !== originalData.email) ||
-        (formData.newPassword !== '' && formData.newPassword !== originalData.pass)
-      ) {
+      if ((formData.email && formData.email !== originalData.email) || 
+          (formData.newPassword && formData.newPassword !== originalData.pass)) {
         setTimeout(() => {
           localStorage.removeItem('token');
           navigate('/auth/login');
         }, 2000);
       } else {
-        // Reset file selection after successful update
         setSelectedFile(null);
-        if (fileInputRef.current) {
-          fileInputRef.current.value = '';
-        }
+        fileInputRef.current && (fileInputRef.current.value = '');
       }
     } catch (err: any) {
-      setMessage(err.message);
+      setMessage(err.response?.data?.message || 'Failed to update profile');
       setIsError(true);
     } finally {
       setIsLoading(false);
@@ -216,19 +177,11 @@ const EditProfile: React.FC = () => {
 
     try {
       setIsLoading(true);
-      const response = await fetch('http://localhost:5000/api/me', {
-        method: 'DELETE',
+      await axios.delete(`${API_BASE_URL}/me`, {
         headers: {
           'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json',
         },
       });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        setIsError(true);
-        throw new Error(errorData.message || 'Failed to delete account');
-      }
 
       setMessage('Account deleted successfully!');
       setIsError(false);
@@ -238,7 +191,7 @@ const EditProfile: React.FC = () => {
         navigate('/auth/login');
       }, 2000);
     } catch (err: any) {
-      setMessage(err.message);
+      setMessage(err.response?.data?.message || 'Failed to delete account');
       setIsError(true);
     } finally {
       setIsLoading(false);
@@ -246,30 +199,21 @@ const EditProfile: React.FC = () => {
   };
 
   return (
-    <div className="edit-profile-container">
-      <div className="edit-profile-card">
-        <h2 className="edit-profile-title">Edit Profile</h2>
+    <div className={styles.container}>
+      <div className={styles.card}>
+        <h2 className={styles.title}>Edit Profile</h2>
         
-        <div className="profile-picture-section">
-          <div className="avatar-container" onClick={triggerFileInput}>
-            {previewUrl ? (
-              <img 
-                src={previewUrl} 
-                alt="Profile" 
-                className="profile-avatar"
-                onError={(e) => {
-                  // Fallback to default image if the uploaded image fails to load
-                  (e.target as HTMLImageElement).src = `http://localhost:5000/uploads/defaultPic.png`;
-                }}
-              />
-            ) : (
-              <img 
-                src={`http://localhost:5000/uploads/defaultPic.png`} 
-                alt="Default Profile" 
-                className="profile-avatar"
-              />
-            )}
-            <div className="avatar-overlay">
+        <div className={styles.pictureSection}>
+          <div className={styles.avatarContainer} onClick={triggerFileInput}>
+            <img 
+              src={previewUrl || `${API_BASE_URL.replace('/api', '')}/uploads/defaultPic.png`}
+              alt="Profile" 
+              className={styles.avatar}
+              onError={(e) => {
+                (e.target as HTMLImageElement).src = `${API_BASE_URL.replace('/api', '')}/uploads/defaultPic.png`;
+              }}
+            />
+            <div className={styles.avatarOverlay}>
               <span>Change Photo</span>
             </div>
           </div>
@@ -279,52 +223,55 @@ const EditProfile: React.FC = () => {
             ref={fileInputRef}
             accept="image/*"
             onChange={handleFileChange}
-            className="file-upload-input"
+            className={styles.fileInput}
           />
         </div>
 
-        <form onSubmit={handleSubmit} className="edit-profile-form">
-          {/* ... (rest of the form remains the same) ... */}
-          <div className="form-group">
-            <label htmlFor="username">Username</label>
+        <form onSubmit={handleSubmit} className={styles.form}>
+          <div className={styles.formGroup}>
+            <label htmlFor="username" className={styles.label}>Username</label>
             <input
               id="username"
               name="username"
               type="text"
               value={formData.username}
               onChange={handleChange}
+              className={styles.input}
               required
             />
           </div>
 
-          <div className="form-group">
-            <label htmlFor="email">Email</label>
+          <div className={styles.formGroup}>
+            <label htmlFor="email" className={styles.label}>Email</label>
             <input
               id="email"
               name="email"
               type="email"
               value={formData.email}
               onChange={handleChange}
+              className={styles.input}
               required
             />
           </div>
 
-          <div className="form-group">
-            <label htmlFor="bio">Bio</label>
+          <div className={styles.formGroup}>
+            <label htmlFor="bio" className={styles.label}>Bio</label>
             <textarea
               id="bio"
               name="bio"
               value={formData.bio}
               onChange={handleChange}
+              className={styles.textarea}
+              placeholder='Tell us about yourself...'
               rows={3}
             />
           </div>
 
-          <div className="password-section">
-            <h3>Change Password</h3>
+          <div className={styles.passwordSection}>
+            <h3 className={styles.passwordTitle}>Change Password</h3>
             
-            <div className="form-group">
-              <label htmlFor="currentPassword">Current Password</label>
+            <div className={styles.formGroup}>
+              <label htmlFor="currentPassword" className={styles.label}>Current Password</label>
               <input
                 id="currentPassword"
                 name="currentPassword"
@@ -332,11 +279,12 @@ const EditProfile: React.FC = () => {
                 placeholder="Leave blank to keep current"
                 value={formData.currentPassword}
                 onChange={handleChange}
+                className={styles.input}
               />
             </div>
 
-            <div className="form-group">
-              <label htmlFor="newPassword">New Password</label>
+            <div className={styles.formGroup}>
+              <label htmlFor="newPassword" className={styles.label}>New Password</label>
               <input
                 id="newPassword"
                 name="newPassword"
@@ -344,14 +292,15 @@ const EditProfile: React.FC = () => {
                 placeholder="Leave blank to keep current"
                 value={formData.newPassword}
                 onChange={handleChange}
+                className={styles.input}
               />
             </div>
           </div>
 
-          <div className="form-actions">
+          <div className={styles.actions}>
             <button 
               type="submit" 
-              className="save-button"
+              className={styles.saveButton}
               disabled={isLoading}
             >
               {isLoading ? 'Saving...' : 'Save Changes'}
@@ -360,7 +309,7 @@ const EditProfile: React.FC = () => {
             <button 
               type="button" 
               onClick={handleDelete}
-              className="delete-button"
+              className={styles.deleteButton}
               disabled={isLoading}
             >
               Delete Account
@@ -369,7 +318,7 @@ const EditProfile: React.FC = () => {
         </form>
 
         {message && (
-          <div className={`message ${isError ? 'error' : 'success'}`}>
+          <div className={`${styles.message} ${isError ? styles.error : styles.success}`}>
             {message}
           </div>
         )}

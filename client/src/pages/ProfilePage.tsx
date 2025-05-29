@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate, Outlet } from 'react-router-dom';
 import axios from 'axios';
-import styles from './ProfilePage.module.css';
-import { User, Question, Answer } from './types';
+import styles from '../components/ProfilePage/ProfilePage.module.css';
+import { User, Question, Answer } from '../components/ProfilePage/types';
 
 const API_BASE_URL = 'http://localhost:5000/api';
 
