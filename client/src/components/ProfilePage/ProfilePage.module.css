@@ -1,0 +1,229 @@
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 20px;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  color: #333;
+}
+
+.header {
+  margin-bottom: 30px;
+  position: relative;
+}
+
+.logoutButton {
+  position: absolute;
+  top: 0;
+  right: 0;
+  background-color: #f44336;
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: background-color 0.3s;
+}
+
+.logoutButton:hover {
+  background-color: #d32f2f;
+}
+
+.profileCard {
+  display: flex;
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  padding: 30px;
+  margin-top: 40px;
+}
+
+.pictureContainer {
+  flex: 0 0 200px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-right: 30px;
+}
+
+.picture {
+  width: 150px;
+  height: 150px;
+  border-radius: 50%;
+  background-size: cover;
+  background-position: center;
+  background-color: #f0f0f0;
+  margin-bottom: 20px;
+  border: 3px solid #fff;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+.editButton {
+  background-color: #4CAF50;
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: background-color 0.3s;
+}
+
+.editButton:hover {
+  background-color: #388E3C;
+}
+
+.info {
+  flex: 1;
+}
+
+.username {
+  font-size: 28px;
+  margin: 0 0 5px 0;
+  color: #222;
+}
+
+.email {
+  color: #666;
+  margin: 0 0 15px 0;
+  font-size: 16px;
+}
+
+.reputationBadge {
+  display: inline-block;
+  background-color: #f5f5f5;
+  padding: 5px 10px;
+  border-radius: 4px;
+  margin-bottom: 20px;
+  font-size: 14px;
+}
+
+.reputationScore {
+  font-weight: bold;
+  color: #4CAF50;
+}
+
+.bioSection h4 {
+  margin: 20px 0 10px 0;
+  color: #444;
+  font-size: 18px;
+}
+
+.bio {
+  line-height: 1.6;
+  color: #555;
+}
+
+.content {
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  padding: 30px;
+}
+
+.sectionTitle {
+  font-size: 22px;
+  margin-bottom: 20px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid #eee;
+  color: #333;
+}
+
+.activitySection {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 30px;
+}
+
+.questionsList, .answersList {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 15px;
+}
+
+.questionItem, .answerItem {
+  background: #f9f9f9;
+  padding: 20px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.questionItem:hover, .answerItem:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.questionTitle, .answerQuestionTitle {
+  font-size: 18px;
+  margin: 0 0 10px 0;
+  color: #2c3e50;
+}
+
+.questionContent, .answerContent {
+  color: #555;
+  margin: 0 0 10px 0;
+  line-height: 1.5;
+}
+
+.meta {
+  font-size: 13px;
+  color: #777;
+}
+
+.date {
+  display: block;
+  margin-top: 10px;
+}
+
+.emptyState {
+  text-align: center;
+  padding: 30px;
+  background: #f9f9f9;
+  border-radius: 6px;
+}
+
+.emptyState p {
+  margin-bottom: 20px;
+  color: #666;
+}
+
+.primaryButton {
+  background-color: #4CAF50;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: background-color 0.3s;
+}
+
+.primaryButton:hover {
+  background-color: #388E3C;
+}
+
+.messageContainer {
+  margin-top: 20px;
+  padding: 15px;
+  background-color: #ffebee;
+  border-radius: 4px;
+}
+
+.errorMessage {
+  color: #f44336;
+  margin: 0;
+}
+
+@media (max-width: 768px) {
+  .profileCard {
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+  }
+  
+  .pictureContainer {
+    margin-right: 0;
+    margin-bottom: 20px;
+  }
+}
