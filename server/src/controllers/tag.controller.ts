@@ -1,98 +1,81 @@
-import { Request, Response } from 'express';
+import { Request, Response, NextFunction } from 'express';
 import { Tag } from '../models/Tag';
 import { Question } from '../models/Question';
 import { User } from '../models/User';
+import { controllerWrapper } from './wrapper.controller';
+import { ApiError } from '../middlewares/errorHandler.middleware';
 
-export const getTags = async (req: Request, res: Response) => {
-  try {
-    const tags = await Tag.findAll({
-      attributes: ['id', 'name'],
-      order: [['name', 'ASC']]
-    });
+export const getTags = controllerWrapper(async (req: Request, res: Response, next: NextFunction) => {  const tags = await Tag.findAll({
+    attributes: ['id', 'name'],
+    order: [['name', 'ASC']]
+  });
 
-    res.json(tags);
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: 'Server error' });
+  res.status(200).json(tags);
+});
+
+export const createTag = controllerWrapper(async (req: Request, res: Response, next: NextFunction) => {
+  const userId = (req as any).userId;
+  const names: string[] = req.body.name; // Changed to accept array of tag names
+  // console.log('\n\n\n\nReceived tag names:', names);
+
+  // console.log("Request body:", req.body);
+
+  if (!names || !Array.isArray(names) || names.length === 0) {
+    return next(new ApiError(400, 'Tag names must be provided as a non-empty array'));
   }
-};
 
-export const createTag = async (req: Request, res: Response) => {
-  try {
-    const userId = (req as any).userId;
-    const names: string[] = req.body.name; // Changed to accept array of tag names
-    console.log('\n\n\n\nReceived tag names:', names);
+  // Process each tag name
+  const normalizedTagNames = names.map(name => name.trim().toLowerCase());
+  const uniqueTagNames = [...new Set(normalizedTagNames)]; // Ensure uniqueness
 
-    console.log("Request body:", req.body);
+  // Find existing tags
+  const existingTags = await Tag.findAll({
+    where: { name: uniqueTagNames }
+  });
 
-    if (!names || !Array.isArray(names) || names.length === 0) {
-      res.status(400).json({ message: 'Tag names are required as an array' });
-      return;
-    }
+  const existingTagNames = existingTags.map(tag => tag.name);
+  const newTagNames = uniqueTagNames.filter(name => !existingTagNames.includes(name));
 
-    // Process each tag name
-    const normalizedTagNames = names.map(name => name.trim().toLowerCase());
-    const uniqueTagNames = [...new Set(normalizedTagNames)]; // Ensure uniqueness
+  // Create new tags
+  const createdTags = await Promise.all(
+    newTagNames.map(name => 
+      Tag.create({ 
+        name,
+        userId // Associate tag with user who created it
+      })
+    )
+  );
 
-    // Find existing tags
-    const existingTags = await Tag.findAll({
-      where: { name: uniqueTagNames }
-    });
+  // Combine existing and new tags
+  const allTags = [...existingTags, ...createdTags];
 
-    const existingTagNames = existingTags.map(tag => tag.name);
-    const newTagNames = uniqueTagNames.filter(name => !existingTagNames.includes(name));
+  return res.status(201).json(allTags);
+});
 
-    // Create new tags
-    const createdTags = await Promise.all(
-      newTagNames.map(name => 
-        Tag.create({ 
-          name,
-          userId // Associate tag with user who created it
-        })
-      )
-    );
+export const getTagById = controllerWrapper(async (req: Request, res: Response, next: NextFunction) => {
+  const { id } = req.params;
 
-    // Combine existing and new tags
-    const allTags = [...existingTags, ...createdTags];
-
-    res.status(201).json(allTags);
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: 'Server error' });
+  const tag = await Tag.findByPk(id, {
+    include: [
+      {
+        model: Question,
+        include: [
+          {
+            model: User,
+            attributes: ['id', 'username', 'profilePicture']
+          },
+          {
+            model: Tag,
+            through: { attributes: [] }
+          }
+        ],
+        order: [['createdAt', 'DESC']]
+      }
+    ]
+  });
+  if (!tag) {
+    return next(new ApiError(404, 'Tag not found with the provided ID'));
   }
-};
 
-export const getTagById = async (req: Request, res: Response) => {
-  try {
-    const { id } = req.params;
-
-    const tag = await Tag.findByPk(id, {
-      include: [
-        {
-          model: Question,
-          include: [
-            {
-              model: User,
-              attributes: ['id', 'username', 'profilePicture']
-            },
-            {
-              model: Tag,
-              through: { attributes: [] }
-            }
-          ],
-          order: [['createdAt', 'DESC']]
-        }
-      ]
-    });
-
-    if (!tag) {
-      res.status(404).json({ message: 'Tag not found' });
-      return;
-    }
-
-    res.json(tag);
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: 'Server error' });
-  }
-};
+  return res.status(200).json(tag);
+});

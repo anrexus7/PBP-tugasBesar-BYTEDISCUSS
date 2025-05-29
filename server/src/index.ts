@@ -7,6 +7,7 @@ import questionAnswerRoutes from './routes/question_answer.routes';
 import tagRoutes from './routes/tag.routes';
 import voteRoutes from './routes/vote.routes';
 import commentRoutes from './routes/comment.routes';
+import { errorHandlerMiddleware } from './middlewares/errorHandler.middleware';
 const app = express();
 
 // Middleware
@@ -28,6 +29,8 @@ app.use('/api', questionAnswerRoutes);
 app.use('/api/tags', tagRoutes);
 app.use('/api', voteRoutes);
 app.use('/api/', commentRoutes);
+
+app.use(errorHandlerMiddleware)
 
 // app.listen(3000, () => console.log('Server berjalan di port 3000'));
 

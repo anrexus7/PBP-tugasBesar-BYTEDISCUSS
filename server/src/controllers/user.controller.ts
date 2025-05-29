@@ -1,8 +1,10 @@
-import { Request, Response } from 'express';
+import { Request, Response, NextFunction } from 'express';
 import { User } from '../models/User';
 import path from 'path';
 import fs from 'fs';
 import { v4 as uuidv4 } from 'uuid';
+import { controllerWrapper } from './wrapper.controller';
+import { ApiError } from '../middlewares/errorHandler.middleware';
 
 // declare global {
 //   namespace Express {
@@ -28,154 +30,123 @@ const deleteOldFile = (filePath: string) => {
   }
 };
 
-export const getCurrentUser = async (req: Request, res: Response) => {
-  try {
-    // @ts-ignore
-    const user = await User.findByPk(req.userId, {
-      attributes: { exclude: ['passwordHash'] },
-      include: [
-        {
-          association: 'questions',
-          attributes: ['id', 'content','title', 'createdAt'],
-          limit: 5,
-          order: [['createdAt', 'DESC']]
-        },
-        {
-          association: 'answers',
-          attributes: ['id', 'content','questionId', 'createdAt'],
-          limit: 5,
-          order: [['createdAt', 'DESC']]
-        }
-      ]
-    });
-
-    if (!user) {
-      res.status(404).json({ message: 'User not found' });
-      return 
-    }
-
-    console.log("User Data: ", user) // debug
-    res.json(user);
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: 'Server error' });
-  }
-};
-
-export const updateCurrentUser = async (req: Request, res: Response) => {
-  try {
-    // @ts-ignore
-    const userId = req.userId;
-    const { username, email, bio, currentPassword, newPassword } = req.body;
-
-    const user = await User.findByPk(userId);
-    if (!user) {
-      res.status(404).json({ message: 'User not found' });
-      return 
-    }
-
-    // Update basic info
-    if (username) user.username = username;
-    if (email && email !== user.email) {
-      const emailExists = await User.findOne({ where: { email } });
-      if (emailExists) {
-        res.status(400).json({ message: 'Email already in use' });
-        return 
+export const getCurrentUser = controllerWrapper(async (req: Request, res: Response, next: NextFunction) => {
+  // @ts-ignore
+  const user = await User.findByPk(req.userId, {
+    attributes: { exclude: ['passwordHash'] },
+    include: [
+      {
+        association: 'questions',
+        attributes: ['id', 'content','title', 'createdAt'],
+        limit: 5,
+        order: [['createdAt', 'DESC']]
+      },
+      {
+        association: 'answers',
+        attributes: ['id', 'content','questionId', 'createdAt'],
+        limit: 5,
+        order: [['createdAt', 'DESC']]
       }
-      user.email = email;
-    }
-    if (bio) user.bio = bio;
+    ]
+  });
 
-    // Update password if provided
-    if (currentPassword && newPassword) {
-      const isMatch = await user.comparePassword(currentPassword);
-      if (!isMatch) {
-        res.status(400).json({ message: 'Current password is incorrect' });
-        return 
-      }
-      user.passwordHash = newPassword;
-    }
-
-    await user.save();
-
-    // Return updated user without sensitive data
-    const updatedUser = await User.findByPk(userId, {
-      attributes: { exclude: ['passwordHash'] }
-    });
-
-    res.json(updatedUser);
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: 'Server error' });
+  if (!user) {
+    return next(new ApiError(404, 'Current user profile not found'));
   }
-};
+  console.log("User Data: ", user) // debug
+  res.status(200).json(user);
+});
 
-export const uploadProfilePicture = async (req: Request, res: Response) => {
-  try {
-    // @ts-ignore
-    const userId = req.userId;
-    
-    if (!req.file) {
-      res.status(400).json({ message: 'No file uploaded' });
-      return 
-    }
+export const updateCurrentUser = controllerWrapper(async (req: Request, res: Response, next: NextFunction) => {
+  // @ts-ignore
+  const userId = req.userId;
+  const { username, email, bio, currentPassword, newPassword } = req.body;
 
-    const user = await User.findByPk(userId);
-    if (!user) {
-      res.status(404).json({ message: 'User not found' });
-      return 
-    }
-
-    // Hapus file lama jika ada
-    if (user.profilePicture) {
-      const oldFilePath = path.join(__dirname, '../../uploads', user.profilePicture);
-      deleteOldFile(oldFilePath);
-    }
-
-    // Generate nama file unik
-    const fileExt = path.extname(req.file.originalname);
-    const fileName = `${uuidv4()}${fileExt}`;
-    const filePath = path.join(__dirname, '../../uploads', fileName);
-
-    // Simpan file
-    fs.writeFileSync(filePath, req.file.buffer);
-
-    // Update database
-    user.profilePicture = fileName;
-    await user.save();
-
-    res.json({ 
-      profilePicture: `/uploads/${fileName}`,
-      message: 'Profile picture updated successfully' 
-    });
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: 'Server error' });
+  const user = await User.findByPk(userId);
+  if (!user) {
+    return next(new ApiError(404, 'User account not found for update'));
   }
-};
 
-export const deleteCurrentUser = async (req: Request, res: Response) => {
-  try {
-    // @ts-ignore
-    const userId = req.userId;
-
-    const user = await User.findByPk(userId);
-    if (!user) {
-      res.status(404).json({ message: 'User not found' });
-      return 
+  // Update basic info
+  if (username) user.username = username;
+  if (email && email !== user.email) {
+    const emailExists = await User.findOne({ where: { email } });
+    if (emailExists) {
+      return next(new ApiError(400, 'Email address is already registered to another account'));
     }
-
-    // Hapus profile picture jika ada
-    if (user.profilePicture) {
-      const filePath = path.join(__dirname, '../../uploads', user.profilePicture);
-      deleteOldFile(filePath);
-    }
-
-    await user.destroy();
-
-    res.json({ message: 'User account deleted successfully' });
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: 'Server error' });
+    user.email = email;
   }
-};
+  if (bio) user.bio = bio;
+
+  // Update password if provided
+  if (currentPassword && newPassword) {
+    const isMatch = await user.comparePassword(currentPassword);
+    if (!isMatch) {
+      return next(new ApiError(400, 'Current password verification failed'));
+    }
+    user.passwordHash = newPassword;
+  }
+
+  await user.save();
+  // Return updated user without sensitive data
+  const updatedUser = await User.findByPk(userId, {
+    attributes: { exclude: ['passwordHash'] }
+  });
+
+  res.status(200).json(updatedUser);
+});
+
+export const uploadProfilePicture = controllerWrapper(async (req: Request, res: Response, next: NextFunction) => {
+  // @ts-ignore
+  const userId = req.userId;
+  
+  if (!req.file) {
+    return next(new ApiError(400, 'Profile picture file is required for upload'));
+  }
+
+  const user = await User.findByPk(userId);
+  if (!user) {
+    return next(new ApiError(404, 'User account not found for profile picture update'));
+  }
+
+  // Hapus file lama jika ada
+  if (user.profilePicture) {
+    const oldFilePath = path.join(__dirname, '../../uploads', user.profilePicture);
+    deleteOldFile(oldFilePath);
+  }
+
+  // Generate nama file unik
+  const fileExt = path.extname(req.file.originalname);
+  const fileName = `${uuidv4()}${fileExt}`;
+  const filePath = path.join(__dirname, '../../uploads', fileName);
+
+  // Simpan file
+  fs.writeFileSync(filePath, req.file.buffer);
+  // Update database
+  user.profilePicture = fileName;
+  await user.save();
+
+  res.status(200).json({ 
+    profilePicture: `/uploads/${fileName}`,
+    message: 'Profile picture updated successfully' 
+  });
+});
+
+export const deleteCurrentUser = controllerWrapper(async (req: Request, res: Response, next: NextFunction) => {
+  // @ts-ignore
+  const userId = req.userId;
+
+  const user = await User.findByPk(userId);
+  if (!user) {
+    return next(new ApiError(404, 'User account not found for deletion'));
+  }
+
+  // Hapus profile picture jika ada
+  if (user.profilePicture) {
+    const filePath = path.join(__dirname, '../../uploads', user.profilePicture);
+    deleteOldFile(filePath);
+  }
+  await user.destroy();
+
+  res.status(200).json({ message: 'User account deleted successfully' });
+});

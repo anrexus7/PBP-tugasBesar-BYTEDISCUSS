@@ -63,77 +63,6 @@ const [question, setQuestion] = useState<Question | null>({
 
   const token = localStorage.getItem('token');
 
-  useEffect(() => {
-  const fetchQuestionWithComments = async () => {
-  try {
-    setIsLoading(true);
-    
-    // 1. Fetch question data
-    const questionRes = await fetch(`http://localhost:5000/api/questions/${id}`, {
-      headers: { 
-        Authorization: `Bearer ${token}`
-      }
-    });
-    
-    if (!questionRes.ok) throw new Error('Failed to fetch question');
-    
-    const questionData = await questionRes.json();
-    
-    // 2. Fetch comments for each answer
-    const answersWithComments = await Promise.all(
-      questionData.answers?.map(async (answer: any) => {
-        const commentsRes = await fetch(`http://localhost:5000/api?answerId=${answer.id}`, {
-          headers: {
-            Authorization: `Bearer ${token}`
-          }
-        });
-        
-        const comments = commentsRes.ok ? await commentsRes.json() : [];
-        
-        return {
-          ...answer,
-          comments,
-          voteCount: answer.voteCount || 0
-        };
-      }) || []
-    );
-    console.log('question data :', questionData);
-    // 3. Update state with complete data
-    setQuestion({
-      ...questionData,
-      voteCount: questionData.voteCount || 0,
-      answers: answersWithComments
-    });
-
-    // Fetch user votes
-    if (token) {
-      const votesRes = await fetch('http://localhost:5000/api/votes/me', {
-        headers: {
-          Authorization: `Bearer ${token}`
-        }
-      });
-      
-      if (votesRes.ok) {
-        const votesData = await votesRes.json();
-        const votesMap = votesData.votes.reduce((acc: Record<string, number>, vote: any) => {
-          if (vote.questionId) acc[`q-${vote.questionId}`] = vote.value;
-          if (vote.answerId) acc[`a-${vote.answerId}`] = vote.value;
-          return acc;
-        }, {});
-        setUserVotes(votesMap);
-      }
-    }
-  } catch (err) {
-    console.error('Error loading question data:', err);
-    setError('Failed to load question data');
-  } finally {
-    setIsLoading(false);
-  }
-};
-
-  fetchQuestionWithComments();
-}, [id, token]);
-
   const handlePostAnswer = async () => {
     if (!newAnswer.trim()) return;
 
@@ -233,105 +162,186 @@ const [question, setQuestion] = useState<Question | null>({
     }
   };
 
- const handleQuestionVote = async (value: number) => {
-    if (!token) {
-      alert('Please login to vote');
-      return;
+// --- Old upvote/downvote logic (commented out for reference) ---
+const handleQuestionVote = async (value: number) => {
+  if (!token) {
+    alert('Please login to vote');
+    return;
+  }
+  try {
+    console.log('calling fifth : 5');
+    const res = await fetch(`http://localhost:5000/api/questions/${id}/vote`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`
+      },
+      body: JSON.stringify({ value })
+    });
+    const updatedQuestion = await res.json();
+    if (!res.ok) {
+      throw new Error(updatedQuestion.error || 'Failed to process vote');
     }
-
-    try {
-      console.log('calling fifth : 5');
-      const res = await fetch(`http://localhost:5000/api/questions/${id}/vote`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify({ value })
-      });
-
-      const updatedQuestion = await res.json();
-      console.log("asdklfnalksdnfklasndfkln",updatedQuestion);
-      if (!res.ok) {
-        throw new Error(updatedQuestion.error || 'Failed to process vote');
+    setUserVotes(prev => {
+      const key = `q-${id}`;
+      // If clicking same vote, remove it
+      if (prev[key] === value) {
+        const newVotes = {...prev};
+        delete newVotes[key];
+        return newVotes;
       }
+      // Otherwise update/add the vote
+      return {...prev, [key]: value};
+    });
+    setQuestion(prev => ({
+      ...prev!,
+      voteCount: updatedQuestion.voteCount || 0
+    }));
+  } catch (err) {
+    console.error('Error voting:', err);
+    setError('Failed to process vote');
+  }
+};
 
-      // Update user's vote state
-      setUserVotes(prev => {
-        const key = `q-${id}`;
-        // If clicking same vote, remove it
-        if (prev[key] === value) {
-          const newVotes = {...prev};
-          delete newVotes[key];
-          return newVotes;
-        }
-        // Otherwise update/add the vote
-        return {...prev, [key]: value};
-      });
-
-      setQuestion(updatedQuestion);
-    } catch (err) {
-      console.error('Error voting:', err);
-      setError('Failed to process vote');
+const handleAnswerVote = async (answerId: string, value: number) => {
+  if (!token) {
+    alert('Please login to vote');
+    return;
+  }
+  try {
+    const res = await fetch(`http://localhost:5000/api/answers/${answerId}/vote`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`
+      },
+      body: JSON.stringify({ value })
+    });
+    if (!res.ok) {
+      const errorData = await res.json();
+      throw new Error(errorData.message || 'Failed to process vote');
     }
-  };
-
-  const handleAnswerVote = async (answerId: string, value: number) => {
-    if (!token) {
-      alert('Please login to vote');
-      return;
-    }
-
-    try {
-      const res = await fetch(`http://localhost:5000/api/answers/${answerId}/vote`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify({ value })
-      });
-
-      if (!res.ok) {
-        const errorData = await res.json();
-        throw new Error(errorData.message || 'Failed to process vote');
+    const updatedAnswer = await res.json();
+    setUserVotes(prev => {
+      const key = `a-${answerId}`;
+      // If clicking same vote, remove it
+      if (prev[key] === value) {
+        const newVotes = {...prev};
+        delete newVotes[key];
+        return newVotes;
       }
+      // Otherwise update/add the vote
+      return {...prev, [key]: value};
+    });
+    setQuestion(prev => {
+      if (!prev) return prev;
+      return {
+        ...prev,
+        answers: prev.answers.map(answer => 
+          answer.id === answerId 
+            ? { 
+                ...answer, 
+                voteCount: updatedAnswer.voteCount 
+              } 
+            : answer
+        )
+      };
+    });
+  } catch (err:any) {
+    console.error('Error voting on answer:', err);
+    setError(err.message || 'Failed to process vote');
+  }
+};
+// --- End old logic ---
 
-      const updatedAnswer = await res.json();
+  // --- New upvote/downvote logic (active) ---
+  // const handleQuestionVote = async (value: number) => {
+  //   if (!token) {
+  //     alert('Please login to vote');
+  //     return;
+  //   }
+  //   try {
+  //     // Toggle logic: if already voted with this value, remove vote (set to 0)
+  //     const currentVote = userVotes[`q-${question?.id}`];
+  //     const sendValue = currentVote === value ? 0 : value;
+  //     const res = await fetch(`http://localhost:5000/api/questions/${id}/vote`, {
+  //       method: 'POST',
+  //       headers: {
+  //         'Content-Type': 'application/json',
+  //         'Authorization': `Bearer ${token}`
+  //       },
+  //       body: JSON.stringify({ value: sendValue })
+  //     });
+  //     const updatedQuestion = await res.json();
+  //     if (!res.ok) {
+  //       throw new Error(updatedQuestion.error || 'Failed to process vote');
+  //     }
+  //     setUserVotes(prev => {
+  //       const key = `q-${id}`;
+  //       if (sendValue === 0) {
+  //         const newVotes = { ...prev };
+  //         delete newVotes[key];
+  //         return newVotes;
+  //       }
+  //       return { ...prev, [key]: sendValue };
+  //     });
+  //     setQuestion(prev => ({
+  //       ...prev!,
+  //       voteCount: updatedQuestion.voteCount || 0
+  //     }));
+  //   } catch (err) {
+  //     console.error('Error voting:', err);
+  //     setError('Failed to process vote');
+  //   }
+  // };
 
-      // Update user's vote state
-      setUserVotes(prev => {
-        const key = `a-${answerId}`;
-        // If clicking same vote, remove it
-        if (prev[key] === value) {
-          const newVotes = {...prev};
-          delete newVotes[key];
-          return newVotes;
-        }
-        // Otherwise update/add the vote
-        return {...prev, [key]: value};
-      });
-
-      // Update answer vote count
-      setQuestion(prev => {
-        if (!prev) return prev;
-        return {
-          ...prev,
-          answers: prev.answers.map(answer => 
-            answer.id === answerId 
-              ? { 
-                  ...answer, 
-                  voteCount: updatedAnswer.voteCount 
-                } 
-              : answer
-          )
-        };
-      });
-    } catch (err:any) {
-      console.error('Error voting on answer:', err);
-      setError(err.message || 'Failed to process vote');
-    }
-  };
+  // const handleAnswerVote = async (answerId: string, value: number) => {
+  //   if (!token) {
+  //     alert('Please login to vote');
+  //     return;
+  //   }
+  //   try {
+  //     const currentVote = userVotes[`a-${answerId}`];
+  //     const sendValue = currentVote === value ? 0 : value;
+  //     const res = await fetch(`http://localhost:5000/api/answers/${answerId}/vote`, {
+  //       method: 'POST',
+  //       headers: {
+  //         'Content-Type': 'application/json',
+  //         'Authorization': `Bearer ${token}`
+  //       },
+  //       body: JSON.stringify({ value: sendValue })
+  //     });
+  //     if (!res.ok) {
+  //       const errorData = await res.json();
+  //       throw new Error(errorData.message || 'Failed to process vote');
+  //     }
+  //     const updatedAnswer = await res.json();
+  //     setUserVotes(prev => {
+  //       const key = `a-${answerId}`;
+  //       if (sendValue === 0) {
+  //         const newVotes = { ...prev };
+  //         delete newVotes[key];
+  //         return newVotes;
+  //       }
+  //       return { ...prev, [key]: sendValue };
+  //     });
+  //     setQuestion(prev => {
+  //       if (!prev) return prev;
+  //       return {
+  //         ...prev,
+  //         answers: prev.answers.map(answer =>
+  //           answer.id === answerId
+  //             ? { ...answer, voteCount: updatedAnswer.voteCount }
+  //             : answer
+  //         )
+  //       };
+  //     });
+  //   } catch (err: any) {
+  //     console.error('Error voting on answer:', err);
+  //     setError(err.message || 'Failed to process vote');
+  //   }
+  // };
+  // --- End new logic ---
 
 
   const reloadComments = async (answerId: string) => {
@@ -475,12 +485,36 @@ const reloadAllData = async () => {
   }
 };
 
-// Panggil fungsi ini ketika komponen mount atau setelah operasi tertentu
-useEffect(() => {
-  reloadAllData();
-}, [id, token]);
+// Commented out to prevent double-fetching and double-incrementing viewCount:
+// useEffect(() => {
+//   const fetchQuestionWithComments = async () => {
+//     try {
+//       const res = await fetch(`http://localhost:5000/api/questions/${id}`, {
+//         headers: { 
+//           Authorization: `Bearer ${token}`
+//         }
+//       });
+      
+//       if (!res.ok) throw new Error('Failed to fetch question');
+      
+//       const questionData = await res.json();
+//       setQuestion(questionData);
+//     } catch (err) {
+//       console.error('Error fetching question:', err);
+//       setError('Failed to load question');
+//     } finally {
+//       setIsLoading(false);
+//     }
+//   };
+
+//   fetchQuestionWithComments();
+// }, [id, token]);
 
 
+
+  useEffect(() => {
+    reloadAllData();
+  }, [id, token]);
 
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString('en-US', {
@@ -495,7 +529,7 @@ useEffect(() => {
   if (isLoading) return <div className="loading">Loading question...</div>;
   if (error) return <div className="error">{error}</div>;
   if (!question) return <div className="error">Question not found</div>;
-  console.log("qqqqqq",question)
+
   return (
     <div className="question-detail-container">
       <div className="question-header">
@@ -525,7 +559,7 @@ useEffect(() => {
           >
             <FaThumbsUp />
           </button>
-          <span className="vote-count">{question.votes?.length || 0}</span>
+          <span className="vote-count">{question.voteCount ?? 0}</span>
           <button 
             className={`vote-btn downvote ${userVotes[`q-${question.id}`] === -1 ? 'active' : ''}`}
             onClick={() => handleQuestionVote(-1)}
