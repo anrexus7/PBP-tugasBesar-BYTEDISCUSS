@@ -9,6 +9,15 @@ import useUser from "../hooks/useUser";
 
 const MainPage: React.FC = () => {
   const {
+    currentUser,
+    isLoggedIn,
+    showProfileDropdown,
+    setShowProfileDropdown,
+    handleLogout,
+    userVotes,
+  } = useUser();
+
+  const {
     filteredQuestions,
     searchTerm,
     setSearchTerm,
@@ -18,12 +27,8 @@ const MainPage: React.FC = () => {
     clearTags,
     isLoading,
     error,
-    userVotes,
     handleVote,
-  } = useQuestions();
-
-  const { currentUser, isLoggedIn, showProfileDropdown, setShowProfileDropdown, handleLogout } = useUser();
-  console.log("Current User:", currentUser);
+  } = useQuestions(userVotes);
 
   if (isLoading) {
     return (
@@ -87,16 +92,25 @@ const MainPage: React.FC = () => {
               )}
             </div>
           ) : (
-            filteredQuestions.map((question) => (
-              <QuestionCard
-                key={question.id}
-                question={question}
-                userVotes={userVotes}
-                handleVote={handleVote}
-                isLoggedIn={isLoggedIn}
-                toggleTag={toggleTag}
-              />
-            ))
+            filteredQuestions.map((question) => {
+              const hasAccepted = Array.isArray(question.answers)
+                ? question.answers.some((a:any) => a.isAccepted)
+                : !!question.hasAcceptedAnswer;
+              return (
+                <div key={question.id}>
+                  {hasAccepted && (
+                    <div className={styles.resolvedText}>Resolved</div>
+                  )}
+                  <QuestionCard
+                    question={question}
+                    userVotes={userVotes}
+                    handleVote={handleVote}
+                    isLoggedIn={isLoggedIn}
+                    toggleTag={toggleTag}
+                  />
+                </div>
+              );
+            })
           )}
         </div>
       </div>

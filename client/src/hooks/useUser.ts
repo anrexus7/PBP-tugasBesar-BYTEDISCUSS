@@ -8,11 +8,13 @@ interface UserData {
   email: string;
   profilePicture?: string;
   reputation?: number;
+  votes?: { questionId?: string; answerId?: string; value: number }[];
 }
 
 const useUser = () => {
   const [currentUser, setCurrentUser] = useState<UserData | null>(null);
   const [showProfileDropdown, setShowProfileDropdown] = useState(false);
+  const [userVotes, setUserVotes] = useState<Record<string, number>>({});
   const navigate = useNavigate();
   const isLoggedIn = !!localStorage.getItem("token");
 
@@ -21,6 +23,7 @@ const useUser = () => {
       const token = localStorage.getItem("token");
       if (!token) {
         setCurrentUser(null);
+        setUserVotes({});
         return;
       }
 
@@ -29,9 +32,18 @@ const useUser = () => {
       });
 
       setCurrentUser(response.data);
+
+      // Map votes to { [q-<id>]: value, [a-<id>]: value }
+      const votesMap: Record<string, number> = {};
+      (response.data.votes || []).forEach((vote: any) => {
+        if (vote.questionId) votesMap[`q-${vote.questionId}`] = vote.value;
+        if (vote.answerId) votesMap[`a-${vote.answerId}`] = vote.value;
+      });
+      setUserVotes(votesMap);
     } catch (err) {
       console.error("Failed to fetch user data:", err);
       setCurrentUser(null);
+      setUserVotes({});
     }
   };
 
@@ -56,6 +68,7 @@ const useUser = () => {
     setShowProfileDropdown,
     handleLogout,
     fetchCurrentUser,
+    userVotes,
   };
 };
 

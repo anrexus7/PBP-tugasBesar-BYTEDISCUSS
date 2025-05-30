@@ -80,3 +80,31 @@ export const postVote = async (questionId: string, value: number, token: string)
   );
   return response.data;
 };
+
+export const acceptAnswer = async (answerId: string, token: string) => {
+  const response = await fetch(`http://localhost:5000/api/answers/${answerId}/accept`, {
+    method: 'PUT',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${token}`,
+    },
+  });
+  if (!response.ok) {
+    throw new Error('Failed to accept answer');
+  }
+  return response.json();
+};
+
+export const unacceptAnswer = async (answerId: string, token: string) => {
+  const response = await fetch(`http://localhost:5000/api/answers/${answerId}/unaccept`, {
+    method: 'PUT',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${token}`,
+    },
+  });
+  if (!response.ok) {
+    throw new Error('Failed to unaccept answer');
+  }
+  return response.json();
+};

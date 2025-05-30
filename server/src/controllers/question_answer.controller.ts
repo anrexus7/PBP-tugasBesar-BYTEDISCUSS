@@ -297,3 +297,62 @@ export const deleteAnswer = controllerWrapper(async (req: Request, res: Response
   await answer.destroy();
   res.status(200).json({ message: 'Jawaban berhasil dihapus.' });
 });
+
+// PUT /answers/:id/accept
+export const acceptAnswer = controllerWrapper(async (req: Request, res: Response, next: NextFunction) => {
+  const userId = (req as any).userId;
+  const answerId = req.params.id;
+
+  const answer = await Answer.findByPk(answerId, { include: [Question] });
+  if (!answer) {
+    return next(new ApiError(404, 'Answer not found.'));
+  }
+
+  const question = await Question.findByPk(answer.questionId);
+  if (!question) {
+    return next(new ApiError(404, 'Question not found.'));
+  }
+
+  // Only the question owner can accept an answer
+  if (question.userId !== userId) {
+    return next(new ApiError(403, 'You are not authorized to accept an answer for this question.'));
+  }
+
+  // Set all other answers for this question to isAccepted: false
+  await Answer.update(
+    { isAccepted: false },
+    { where: { questionId: question.id } }
+  );
+
+  // Set this answer to isAccepted: true
+  await answer.update({ isAccepted: true });
+
+  const updatedAnswer = await Answer.findByPk(answerId, { include: [User] });
+  res.status(200).json(updatedAnswer);
+});
+
+// PUT /answers/:id/unaccept
+export const unacceptAnswer = controllerWrapper(async (req: Request, res: Response, next: NextFunction) => {
+  const userId = (req as any).userId;
+  const answerId = req.params.id;
+
+  const answer = await Answer.findByPk(answerId, { include: [Question] });
+  if (!answer) {
+    return next(new ApiError(404, 'Answer not found.'));
+  }
+
+  const question = await Question.findByPk(answer.questionId);
+  if (!question) {
+    return next(new ApiError(404, 'Question not found.'));
+  }
+
+  // Only the question owner can unaccept
+  if (question.userId !== userId) {
+    return next(new ApiError(403, 'You are not authorized to unaccept an answer for this question.'));
+  }
+
+  await answer.update({ isAccepted: false });
+
+  const updatedAnswer = await Answer.findByPk(answerId, { include: [User] });
+  res.status(200).json(updatedAnswer);
+});

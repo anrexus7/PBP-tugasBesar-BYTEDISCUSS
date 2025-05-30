@@ -2,6 +2,11 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 
+interface Answer {
+  id: string;
+  isAccepted: boolean;
+}
+
 interface Question {
   id: string;
   title: string;
@@ -16,6 +21,7 @@ interface Question {
     username: string;
     profilePicture?: string;
   };
+  answers?: Answer[]; // <-- Add this line for type safety
 }
 
 interface Tag {
@@ -23,7 +29,7 @@ interface Tag {
   name: string;
 }
 
-const useQuestions = () => {
+const useQuestions = (userVotesFromMe?: Record<string, number>) => {
   const [questions, setQuestions] = useState<Question[]>([]);
   const [filteredQuestions, setFilteredQuestions] = useState<Question[]>([]);
   const [searchResults, setSearchResults] = useState<Question[]>([]);
@@ -32,7 +38,7 @@ const useQuestions = () => {
   const [tags, setTags] = useState<Tag[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState("");
-  const [userVotes, setUserVotes] = useState<Record<string, number>>({});
+  const [userVotes, setUserVotes] = useState<Record<string, number>>(userVotesFromMe || {});
   const navigate = useNavigate();
   const isLoggedIn = !!localStorage.getItem("token");
 
@@ -41,9 +47,9 @@ const useQuestions = () => {
       setIsLoading(true);
       setError("");
       const token = localStorage.getItem("token");
-
       const config = token ? { headers: { Authorization: `Bearer ${token}` } } : {};
-      const response = await axios.get("http://localhost:5000/api/questions", config);      const safeQuestions = Array.isArray(response.data) ? response.data : [];
+      const response = await axios.get("http://localhost:5000/api/questions", config);
+      const safeQuestions = Array.isArray(response.data) ? response.data : [];
       setQuestions(safeQuestions);
       setSearchResults(safeQuestions);
       setFilteredQuestions(safeQuestions);
@@ -61,25 +67,6 @@ const useQuestions = () => {
       }));
 
       setTags(uniqueTags);
-
-      if (token) {
-        try {
-          const votesResponse = await axios.get("http://localhost:5000/api/votes/me", {
-            headers: { Authorization: `Bearer ${token}` },
-          });
-
-          const votesMap: Record<string, number> = {};
-          (votesResponse.data.votes || []).forEach((vote: any) => {
-            if (vote?.questionId && vote?.value) {
-              votesMap[vote.questionId] = vote.value;
-            }
-          });
-
-          setUserVotes(votesMap);
-        } catch (err) {
-          console.error("Failed to fetch votes:", err);
-        }
-      }
     } catch (err) {
       console.error("Error fetching questions:", err);
       setError("Failed to fetch questions. Please try again later.");

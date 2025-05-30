@@ -38,14 +38,16 @@ export const getCurrentUser = controllerWrapper(async (req: Request, res: Respon
       {
         association: 'questions',
         attributes: ['id', 'content','title', 'createdAt'],
-        limit: 5,
         order: [['createdAt', 'DESC']]
       },
       {
         association: 'answers',
         attributes: ['id', 'content','questionId', 'createdAt'],
-        limit: 5,
         order: [['createdAt', 'DESC']]
+      },
+      {
+        association: 'votes',
+        attributes: ['questionId', 'answerId', 'value']
       }
     ]
   });
@@ -53,8 +55,10 @@ export const getCurrentUser = controllerWrapper(async (req: Request, res: Respon
   if (!user) {
     return next(new ApiError(404, 'Current user profile not found'));
   }
-  console.log("User Data: ", user) // debug
-  res.status(200).json(user);
+  // Combine votes into a flat array for frontend
+  const userJson = user.toJSON();
+  userJson.votes = userJson.votes || [];
+  res.status(200).json(userJson);
 });
 
 export const updateCurrentUser = controllerWrapper(async (req: Request, res: Response, next: NextFunction) => {

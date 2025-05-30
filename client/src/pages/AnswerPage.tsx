@@ -37,6 +37,11 @@ const AnswerPage = () => {
     return currentUserId !== null && answer.user?.id === currentUserId;
   };
 
+  const isQuestionOwner = () => {
+    const currentUserId = getCurrentUserId();
+    return currentUserId !== null && question?.user?.id === currentUserId;
+  };
+
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString('en-US', {
       year: 'numeric',
@@ -209,6 +214,19 @@ const AnswerPage = () => {
 
     try {
       const updatedQuestion = await api.postVote(id!, value, token);
+      // Preserve comments from the previous state if possible
+      setQuestion(prev => {
+        if (!prev) return updatedQuestion;
+        // Merge comments from prev.answers into updatedQuestion.answers by id
+        if (prev.answers && updatedQuestion.answers) {
+          const answersWithComments = updatedQuestion.answers.map(ans => {
+            const prevAns = prev.answers.find(a => a.id === ans.id);
+            return prevAns && prevAns.comments ? { ...ans, comments: prevAns.comments } : ans;
+          });
+          return { ...updatedQuestion, answers: answersWithComments };
+        }
+        return updatedQuestion;
+      });
       setUserVotes(prev => {
         const key = `q-${id}`;
         if (prev[key] === value) {
@@ -218,9 +236,27 @@ const AnswerPage = () => {
         }
         return { ...prev, [key]: value };
       });
-      setQuestion(updatedQuestion);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to process vote');
+    }
+  };
+
+  // Accept/Unaccept answer handler
+  const handleAcceptAnswer = async (answerId: string) => {
+    try {
+      await api.acceptAnswer(answerId, token!);
+      await loadQuestionData();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to accept answer');
+    }
+  };
+
+  const handleUnacceptAnswer = async (answerId: string) => {
+    try {
+      await api.unacceptAnswer(answerId, token!);
+      await loadQuestionData();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to unaccept answer');
     }
   };
 
@@ -283,14 +319,16 @@ const AnswerPage = () => {
           <p className={styles.noAnswers}>No answers yet. Be the first to answer!</p>
         ) : (
           <div className={styles.answersList}>
-            {question.answers?.map(answer => (
+            {(question.answers
+              ? [...question.answers].sort((a, b) => (b.isAccepted ? 1 : 0) - (a.isAccepted ? 1 : 0))
+              : []
+            ).map(answer => (
               <div key={answer.id} className={`${styles.answerCard} ${answer.isAccepted ? styles.accepted : ''}`}>
                 {answer.isAccepted && (
                   <div className={styles.acceptedBadge}>
                     <FaCheck /> Accepted Answer
                   </div>
                 )}
-                
                 <div className={styles.answerContent}>
                   {editingAnswerId === answer.id ? (
                     <div className={styles.editAnswerForm}>
@@ -348,6 +386,27 @@ const AnswerPage = () => {
                                 <FaTrash /> Delete
                               </button>
                             </div>
+                          )}
+                          {/* Accept/Unaccept Answer button for question owner */}
+                          {token && isQuestionOwner() && (
+                            answer.isAccepted ? (
+                              <button
+                                className={styles.unacceptBtn}
+                                onClick={() => handleUnacceptAnswer(answer.id)}
+                              >
+                                <FaCheck /> Unaccept
+                              </button>
+                            ) : (
+                              // Only show Accept button if NO answer is accepted yet
+                              !question.answers?.some(a => a.isAccepted) && (
+                                <button
+                                  className={styles.acceptBtn}
+                                  onClick={() => handleAcceptAnswer(answer.id)}
+                                >
+                                  <FaCheck /> Accept
+                                </button>
+                              )
+                            )
                           )}
                         </div>
                       </div>
@@ -450,7 +509,7 @@ const AnswerPage = () => {
           </div>
         )}
 
-        {token && (
+        {token && !question.answers?.some(a => a.isAccepted) && (
           <div className={styles.newAnswerForm}>
             <h3>Your Answer</h3>
             <textarea
@@ -465,6 +524,12 @@ const AnswerPage = () => {
             >
               <FaReply /> Post Your Answer
             </button>
+          </div>
+        )}
+        {/* If already accepted, show info */}
+        {token && question.answers?.some(a => a.isAccepted) && (
+          <div className={styles.infoMessage}>
+            An answer has already been accepted. No more answers can be posted.
           </div>
         )}
       </div>
