@@ -259,7 +259,9 @@ const AnswerPage = () => {
           >
             <FaThumbsUp />
           </button>
-          <span className={styles.voteCount}>{question.votes?.length || 0}</span>
+          <span className={styles.voteCount}>
+            {question.votes?.reduce((sum, vote) => sum + vote.value, 0) || 0}
+          </span>
           <button 
             className={`${styles.voteBtn} ${styles.downvote} ${userVotes[`q-${question.id}`] === -1 ? styles.active : ''}`}
             onClick={() => handleQuestionVote(-1)}

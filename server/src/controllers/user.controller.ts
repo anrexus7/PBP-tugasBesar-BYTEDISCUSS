@@ -85,6 +85,9 @@ export const updateCurrentUser = controllerWrapper(async (req: Request, res: Res
       return next(new ApiError(400, 'Current password verification failed'));
     }
     user.passwordHash = newPassword;
+    
+    const bcrypt = require('bcrypt');
+    user.passwordHash = await bcrypt.hash(newPassword, 10);
   }
 
   await user.save();
