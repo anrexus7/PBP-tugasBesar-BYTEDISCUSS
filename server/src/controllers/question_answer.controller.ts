@@ -1,4 +1,4 @@
-import { Request, Response } from 'express';
+import { Request, Response, NextFunction } from 'express';
 import { Question } from '../models/Question';
 import { Answer } from '../models/Answer';
 import { User } from '../models/User';
@@ -8,6 +8,7 @@ import { v4 as uuidv4 } from 'uuid';
 import { Vote } from '../models/Vote';
 import { QuestionTag } from '../models/QuestionTag';
 import { controllerWrapper } from './wrapper.controller';
+import { ApiError } from '../middlewares/errorHandler.middleware';
 
 // Extend Express Request interface to include 'user'
 declare global {
@@ -53,7 +54,7 @@ export const getAllQuestions = controllerWrapper(async (req: Request, res: Respo
 });
 
 // GET /questions/:id
-export const getQuestionById = controllerWrapper(async (req: Request, res: Response): Promise<void> => {
+export const getQuestionById = controllerWrapper(async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   const question = await Question.findByPk(req.params.id, {
     include: [
       User,
@@ -78,8 +79,7 @@ export const getQuestionById = controllerWrapper(async (req: Request, res: Respo
   });
 
   if (!question) {
-    res.status(404).json({ error: 'Pertanyaan tidak ditemukan.' });
-    return;
+    return next(new ApiError(404, 'Pertanyaan tidak ditemukan.'));
   }
 
   // Increment viewCount if user is logged in
@@ -93,19 +93,17 @@ export const getQuestionById = controllerWrapper(async (req: Request, res: Respo
 });
 
 // POST /questions/new
-export const createQuestion = controllerWrapper(async (req: Request, res: Response): Promise<void> => {
+export const createQuestion = controllerWrapper(async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   const userId = (req as any).userId;
   
   if (!userId) {
-    res.status(401).json({ message: 'Unauthorized' });
-    return;
+    return next(new ApiError(401, 'Unauthorized'));
   }
 
   const { title, content, tags } = req.body;
 
   if (!title || !content) {
-    res.status(400).json({ error: 'Title and content are required.' });
-    return;
+    return next(new ApiError(400, 'Title and content are required.'));
   }
 
   // Create the question
@@ -158,7 +156,7 @@ export const createQuestion = controllerWrapper(async (req: Request, res: Respon
 });
 
 // PUT /questions/:id
-export const updateQuestion = controllerWrapper(async (req: Request, res: Response): Promise<void> => {
+export const updateQuestion = controllerWrapper(async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   const userId = (req as any).userId;
   const { title, content, tags } = req.body;
   const question = await Question.findByPk(req.params.id, {
@@ -166,14 +164,12 @@ export const updateQuestion = controllerWrapper(async (req: Request, res: Respon
   });
   
   if (!question) {
-    res.status(404).json({ error: 'Question not found.' });
-    return;
+    return next(new ApiError(404, 'Question not found.'));
   }
 
   // Check if the user is the owner of the question
   if (question.userId !== userId) {
-    res.status(403).json({ error: 'You are not authorized to edit this question.' });
-    return;
+    return next(new ApiError(403, 'You are not authorized to edit this question.'));
   }
 
   // Update basic fields
@@ -220,19 +216,17 @@ export const updateQuestion = controllerWrapper(async (req: Request, res: Respon
 });
 
 // DELETE /questions/:id
-export const deleteQuestion = controllerWrapper(async (req: Request, res: Response): Promise<void> => {
+export const deleteQuestion = controllerWrapper(async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   const userId = (req as any).userId;
   const question = await Question.findByPk(req.params.id);
 
   if (!question) {
-    res.status(404).json({ error: 'Pertanyaan tidak ditemukan.' });
-    return;
+    return next(new ApiError(404, 'Pertanyaan tidak ditemukan.'));
   }
 
   // Check if the user is the owner of the question
   if (question.userId !== userId) {
-    res.status(403).json({ error: 'You are not authorized to delete this question.' });
-    return;
+    return next(new ApiError(403, 'You are not authorized to delete this question.'));
   }
 
   await question.destroy();
@@ -240,20 +234,18 @@ export const deleteQuestion = controllerWrapper(async (req: Request, res: Respon
 });
 
 // POST /questions/:questionId/answers
-export const postAnswer = controllerWrapper(async (req: Request, res: Response): Promise<void> => {
+export const postAnswer = controllerWrapper(async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   const { content } = req.body;
   const { questionId } = req.params;
 
   if (!content) {
-    res.status(400).json({ error: 'Data tidak lengkap.' });
-    return;
+    return next(new ApiError(400, 'Data tidak lengkap.'));
   }
 
   const userId = (req as any).userId;
   console.log('User ID:', userId);
   if (!userId) {
-    res.status(401).json({ message: 'Unauthorized' });
-    return;
+    return next(new ApiError(401, 'Unauthorized'));
   }
 
   const answer = await Answer.create({ 
@@ -269,20 +261,18 @@ export const postAnswer = controllerWrapper(async (req: Request, res: Response):
 });
 
 // PUT /answers/:id
-export const updateAnswer = controllerWrapper(async (req: Request, res: Response): Promise<void> => {
+export const updateAnswer = controllerWrapper(async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   const userId = (req as any).userId;
   const { content } = req.body;
   const answer = await Answer.findByPk(req.params.id);
   
   if (!answer) {
-    res.status(404).json({ error: 'Jawaban tidak ditemukan.' });
-    return;
+    return next(new ApiError(404, 'Jawaban tidak ditemukan.'));
   }
 
   // Check if the user is the owner of the answer
   if (answer.userId !== userId) {
-    res.status(403).json({ error: 'You are not authorized to edit this answer.' });
-    return;
+    return next(new ApiError(403, 'You are not authorized to edit this answer.'));
   }
 
   await answer.update({ content });
@@ -291,19 +281,17 @@ export const updateAnswer = controllerWrapper(async (req: Request, res: Response
 });
 
 // DELETE /answers/:id
-export const deleteAnswer = controllerWrapper(async (req: Request, res: Response): Promise<void> => {
+export const deleteAnswer = controllerWrapper(async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   const userId = (req as any).userId;
   const answer = await Answer.findByPk(req.params.id);
 
   if (!answer) {
-    res.status(404).json({ error: 'Jawaban tidak ditemukan.' });
-    return;
+    return next(new ApiError(404, 'Jawaban tidak ditemukan.'));
   }
 
   // Check if the user is the owner of the answer
   if (answer.userId !== userId) {
-    res.status(403).json({ error: 'You are not authorized to delete this answer.' });
-    return;
+    return next(new ApiError(403, 'You are not authorized to delete this answer.'));
   }
 
   await answer.destroy();

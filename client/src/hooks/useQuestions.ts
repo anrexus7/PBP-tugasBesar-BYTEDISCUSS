@@ -26,6 +26,7 @@ interface Tag {
 const useQuestions = () => {
   const [questions, setQuestions] = useState<Question[]>([]);
   const [filteredQuestions, setFilteredQuestions] = useState<Question[]>([]);
+  const [searchResults, setSearchResults] = useState<Question[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
   const [tags, setTags] = useState<Tag[]>([]);
@@ -42,10 +43,9 @@ const useQuestions = () => {
       const token = localStorage.getItem("token");
 
       const config = token ? { headers: { Authorization: `Bearer ${token}` } } : {};
-      const response = await axios.get("http://localhost:5000/api/questions", config);
-
-      const safeQuestions = Array.isArray(response.data) ? response.data : [];
+      const response = await axios.get("http://localhost:5000/api/questions", config);      const safeQuestions = Array.isArray(response.data) ? response.data : [];
       setQuestions(safeQuestions);
+      setSearchResults(safeQuestions);
       setFilteredQuestions(safeQuestions);
 
       const allTags: string[] = [];
@@ -90,27 +90,44 @@ const useQuestions = () => {
 
   useEffect(() => {
     fetchQuestions();
-  }, [isLoggedIn]);
-
+  }, [isLoggedIn]);  // Debounced search effect
   useEffect(() => {
-    let results = [...questions];
-
-    if (searchTerm) {
-      results = results.filter(
-        (q) =>
-          q.title?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          q.content?.toLowerCase().includes(searchTerm.toLowerCase())
-      );
+    if (!searchTerm.trim()) {
+      setSearchResults(questions);
+      return;
     }
+
+    const timeoutId = setTimeout(async () => {
+      setIsLoading(true);
+      setError("");
+      try {
+        const response = await axios.get("http://localhost:5000/api/search", { 
+          params: { q: searchTerm } 
+        });
+        setSearchResults(response.data);
+      } catch (error) {
+        setError("Failed to fetch search results.");
+        setSearchResults([]);
+      } finally {
+        setIsLoading(false);
+      }
+    }, 500); // 500ms debounce
+
+    return () => clearTimeout(timeoutId);
+  }, [searchTerm, questions]);
+
+  // Combined filtering effect for search results and tags
+  useEffect(() => {
+    let filtered = searchResults;
 
     if (selectedTags.length > 0) {
-      results = results.filter((q) => 
-        q.tags && selectedTags.every(tag => q.tags?.includes(tag))
+      filtered = searchResults.filter(question => 
+        question.tags && selectedTags.every(tagId => question.tags!.includes(tagId))
       );
     }
 
-    setFilteredQuestions(results);
-  }, [searchTerm, selectedTags, questions]);
+    setFilteredQuestions(filtered);
+  }, [searchResults, selectedTags]);
 
   const toggleTag = (tagId: string) => {
     setSelectedTags(prev =>
@@ -153,8 +170,7 @@ const useQuestions = () => {
       });
     } catch (err) {
       console.error("Failed to vote:", err);
-    }
-  };
+    }  };
 
   return {
     questions,

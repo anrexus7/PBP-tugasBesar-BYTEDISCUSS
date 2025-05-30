@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useRef } from "react";
 import { Link } from "react-router-dom";
 import { FaSearch } from "react-icons/fa";
 import styles from "./styles.module.css";
@@ -22,19 +22,25 @@ const Header: React.FC<HeaderProps> = ({
   setShowProfileDropdown,
   handleLogout,
 }) => {
+  const searchInputRef = useRef<HTMLInputElement>(null);
+
+  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setSearchTerm(e.target.value);
+  };
+
   return (
     <header className={styles.header}>
       <div className={styles.logo}>
         <Link to="/mainPage">BYTEDISCUSS</Link>
-      </div>
-
-      <div className={styles.searchBar}>
+      </div>      <div className={styles.searchBar}>
         <FaSearch className={styles.searchIcon} />
         <input
+          ref={searchInputRef}
           type="text"
           placeholder="Search questions..."
           value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
+          onChange={handleSearchChange}
+          autoComplete="off"
         />
       </div>
 

@@ -8,6 +8,7 @@ import tagRoutes from './routes/tag.routes';
 import voteRoutes from './routes/vote.routes';
 import commentRoutes from './routes/comment.routes';
 import { errorHandlerMiddleware } from './middlewares/errorHandler.middleware';
+import searchRoutes from './routes/search.routes';
 const app = express();
 
 // Middleware
@@ -29,6 +30,7 @@ app.use('/api', questionAnswerRoutes);
 app.use('/api/tags', tagRoutes);
 app.use('/api', voteRoutes);
 app.use('/api/', commentRoutes);
+app.use('/api/search', searchRoutes);
 
 app.use(errorHandlerMiddleware)
 
