@@ -156,7 +156,7 @@ const ProfilePage: React.FC = () => {
                 <p>You haven't answered any questions yet.</p>
                 <button 
                   className={styles.primaryButton}
-                  onClick={() => navigate('/questions')}
+                  onClick={() => navigate('/mainPage')}
                 >
                   Browse Questions to Answer
                 </button>

@@ -1,6 +1,7 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
+import { isTokenExpired, setupTokenExpiration, clearTokenExpiration } from '../../../pages/helper/helperFunction';
 
 interface LoginFormData {
   email: string;
@@ -21,9 +22,28 @@ export const useLogin = () => {
   const [errors, setErrors] = useState<LoginErrors>({});
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const [message, setMessage] = useState('');
-  const [isError, setIsError] = useState(false);
-  const navigate = useNavigate();
+  const [message, setMessage] = useState('');  const [isError, setIsError] = useState(false);
+  const navigate = useNavigate();  // Check if user is already authenticated on component mount
+  useEffect(() => {
+    const checkExistingAuth = () => {
+      const token = localStorage.getItem('token');
+      
+      if (token && !isTokenExpired(token)) {
+        // User is already authenticated with valid token, redirect to main page
+        navigate('/mainPage');
+        
+        // Set up token expiration timeout for existing valid token
+        setupTokenExpiration(navigate);
+      }
+    };
+
+    checkExistingAuth();
+
+    // Cleanup function to clear timeout when component unmounts
+    return () => {
+      clearTokenExpiration();
+    };
+  }, [navigate]);
 
   const validateForm = (): boolean => {
     const newErrors: LoginErrors = {};
@@ -58,7 +78,6 @@ export const useLogin = () => {
       }));
     }
   };
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
@@ -70,10 +89,11 @@ export const useLogin = () => {
 
     try {
       // Axios implementation
-      const response = await axios.post('http://localhost:5000/api/auth/login', formData);
-      
-      localStorage.setItem('token', response.data.token);
+      const response = await axios.post('http://localhost:5000/api/auth/login', formData);      localStorage.setItem('token', response.data.token);
       localStorage.setItem('user', JSON.stringify(response.data.user));
+
+      // Set up automatic token expiration after 1 hour
+      setupTokenExpiration(navigate);
 
       setMessage('Login successful! Redirecting...');
       setIsError(false);

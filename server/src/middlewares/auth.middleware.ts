@@ -10,7 +10,9 @@ export const authMiddleware = (
 ): void => {
   const authHeader = req.header('Authorization');
 
-  if (!authHeader || !authHeader.startsWith('Bearer ')) {
+  console.log('Authorization header:', authHeader?.startsWith('Bearer '));
+
+  if (!authHeader && !authHeader?.startsWith('Bearer ')) {
     res.status(401).json({ message: 'No token, authorization denied' });
     return;
   }

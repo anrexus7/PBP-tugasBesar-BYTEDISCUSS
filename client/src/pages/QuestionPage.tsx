@@ -11,11 +11,13 @@ import {
   fetchQuestions, fetchTags, createQuestion, 
   updateQuestion, deleteQuestion, createTag 
 } from '../components/QuestionPage/api';
+import { checkAuthRedirect } from './helper/helperFunction';
 
 const QuestionPage: React.FC = () => {
   const [questions, setQuestions] = useState<Question[]>([]);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
+  const [loading, setLoading] = useState(false);
   const [newQuestion, setNewQuestion] = useState<QuestionFormData>({ 
     title: '', content: '', tags: [] 
   });
@@ -27,22 +29,24 @@ const QuestionPage: React.FC = () => {
   const [newTagName, setNewTagName] = useState('');
   const [showTagForm, setShowTagForm] = useState(false);
   const [tagError, setTagError] = useState('');
-  
-  const navigate = useNavigate();
-  const token = localStorage.getItem('token');
+    const navigate = useNavigate();
+  const token = checkAuthRedirect(navigate);
   const currentUserId = token ? JSON.parse(atob(token.split('.')[1]))?.id : null;
-
   const loadData = async () => {
+    if (loading) return; // Prevent multiple simultaneous loads
+    
+    setLoading(true);
     try {
       const [questionsData, tagsData] = await Promise.all([
         fetchQuestions(token!),
         fetchTags(token!)
-      ]);
-      setQuestions(questionsData);
+      ]);      setQuestions(questionsData);
       setAvailableTags(tagsData);
     } catch (err) {
       setError('Failed to load data');
       console.error(err);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -59,14 +63,19 @@ const QuestionPage: React.FC = () => {
     } catch (err: any) {
       setError(err.response?.data?.message || 'Failed to add question');
     }
-  };
-
-  const handleEdit = (question: Question) => {
+  };  const handleEdit = async (question: Question) => {
+    // Ensure tags are loaded before editing
+    if (availableTags.length === 0 && !loading) {
+      await loadData();
+    }
+    
+    const tagNames = question.tags?.map(tag => tag.name) || [];
+    
     setEditingQuestionId(question.id);
     setEditedQuestion({
       title: question.title,
       content: question.content,
-      tags: question.tags?.map(tag => tag.id) || [],
+      tags: tagNames,
     });
   };
 
@@ -120,23 +129,32 @@ const QuestionPage: React.FC = () => {
   useEffect(() => {
     loadData();
   }, []);
-
-  const renderTagButtons = (tags: string[], isEditing: boolean) => (
-    <div className={styles.tagContainer}>
-      {availableTags.map(tag => (
-        <button
-          key={`${isEditing ? 'edit' : 'new'}-tag-${tag.id}`}
-          type="button"
-          onClick={() => handleTagToggle(tag.name, isEditing)}
-          className={`${styles.tagButton} ${
-            tags.includes(tag.name) ? styles.tagButtonActive : ''
-          }`}
-        >
-          {tag.name}
-        </button>
-      ))}
-    </div>
-  );
+  const renderTagButtons = (tags: string[], isEditing: boolean) => {
+    console.log('Rendering tag buttons. Tags:', tags, 'IsEditing:', isEditing);
+    console.log('Available tags:', availableTags);
+    
+    return (
+      <div className={styles.tagContainer}>
+        {availableTags.map(tag => {
+          const isActive = tags.includes(tag.name);
+          console.log(`Tag "${tag.name}" is active:`, isActive);
+          
+          return (
+            <button
+              key={`${isEditing ? 'edit' : 'new'}-tag-${tag.id}`}
+              type="button"
+              onClick={() => handleTagToggle(tag.name, isEditing)}
+              className={`${styles.tagButton} ${
+                isActive ? styles.tagButtonActive : ''
+              }`}
+            >
+              {tag.name}
+            </button>
+          );
+        })}
+      </div>
+    );
+  };
 
   const renderQuestionForm = (isEditing: boolean) => {
     const formData = isEditing ? editedQuestion : newQuestion;
@@ -234,12 +252,11 @@ const QuestionPage: React.FC = () => {
       </form>
     );
   };
-
   const renderQuestionCard = (question: Question) => (
     <div key={`question-${question.id}`} className={styles.questionCard}>
       {currentUserId === question.userId && (
         <div className={styles.actionButtons}>
-          <button onClick={() => handleEdit(question)} className={styles.editButton}>
+          <button onClick={async () => await handleEdit(question)} className={styles.editButton}>
             <FaEdit /> Edit
           </button>
           <button 

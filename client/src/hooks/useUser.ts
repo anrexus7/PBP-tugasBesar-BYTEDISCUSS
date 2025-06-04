@@ -57,6 +57,7 @@ const useUser = () => {
 
   const handleLogout = () => {
     localStorage.removeItem("token");
+    localStorage.removeItem("user");
     setCurrentUser(null);
     navigate("/auth/login");
   };

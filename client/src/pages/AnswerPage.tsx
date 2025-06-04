@@ -219,7 +219,7 @@ const AnswerPage = () => {
         if (!prev) return updatedQuestion;
         // Merge comments from prev.answers into updatedQuestion.answers by id
         if (prev.answers && updatedQuestion.answers) {
-          const answersWithComments = updatedQuestion.answers.map(ans => {
+          const answersWithComments = updatedQuestion.answers.map((ans:any) => {
             const prevAns = prev.answers.find(a => a.id === ans.id);
             return prevAns && prevAns.comments ? { ...ans, comments: prevAns.comments } : ans;
           });
