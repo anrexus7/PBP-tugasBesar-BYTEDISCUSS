@@ -69,7 +69,7 @@ const QuestionPage: React.FC = () => {
       await loadData();
     }
     
-    const tagNames = question.tags?.map(tag => tag.name) || [];
+    const tagNames = question.tags?.map(tag => typeof tag === 'string' ? tag : tag.name) || [];
     
     setEditingQuestionId(question.id);
     setEditedQuestion({
@@ -79,7 +79,8 @@ const QuestionPage: React.FC = () => {
     });
   };
 
-  const handleUpdate = async () => {
+  const handleUpdate = async (e: React.FormEvent) => {
+    e.preventDefault();
     if (!editingQuestionId) return;
 
     try {
@@ -92,6 +93,8 @@ const QuestionPage: React.FC = () => {
   };
 
   const handleDelete = async (id: string) => {
+    if(!confirm("Are you sure want to delete this question?")) return;
+
     try {
       await deleteQuestion(id, token!);
       loadData();
@@ -130,14 +133,11 @@ const QuestionPage: React.FC = () => {
     loadData();
   }, []);
   const renderTagButtons = (tags: string[], isEditing: boolean) => {
-    console.log('Rendering tag buttons. Tags:', tags, 'IsEditing:', isEditing);
-    console.log('Available tags:', availableTags);
     
     return (
       <div className={styles.tagContainer}>
         {availableTags.map(tag => {
           const isActive = tags.includes(tag.name);
-          console.log(`Tag "${tag.name}" is active:`, isActive);
           
           return (
             <button
@@ -157,7 +157,12 @@ const QuestionPage: React.FC = () => {
   };
 
   const renderQuestionForm = (isEditing: boolean) => {
+    console.log("is editing ahhahha: ", isEditing)
     const formData = isEditing ? editedQuestion : newQuestion;
+
+    console.log("editedQuestion: ", editedQuestion)
+    console.log("newQuestion: ", newQuestion)
+    console.log("formData: ", formData)
     const setter = isEditing ? setEditedQuestion : setNewQuestion;
     const handleSubmitForm = isEditing ? handleUpdate : handleSubmit;
 
@@ -276,13 +281,13 @@ const QuestionPage: React.FC = () => {
         <>
           <h3 className={styles.questionTitle}>{question.title}</h3>
           <p className={styles.questionContent}>{question.content}</p>
-
+          
           {question.tags?.length > 0 && (
             <div className={styles.questionTags}>
               {question.tags.map(tag => {
                 const tagData = availableTags.find(t => t.id === tag.id) || tag;
                 return (
-                  <span key={`question-tag-${tag.id}`} className={styles.tagBadge}>
+                  <span key={`question-tag-${tag}`} className={styles.tagBadge}>
                     {typeof tagData === "object" ? tagData.name : tagData}
                   </span>
                 );

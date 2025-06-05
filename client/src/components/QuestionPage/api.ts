@@ -14,7 +14,7 @@ questionPageApi.interceptors.response.use(
     if (error.response?.status === 401) {
       // Clear invalid token and redirect to login
       localStorage.removeItem('token');
-      window.location.href = '/login';
+      window.location.href = '/auth/login';
     }
     return Promise.reject(error);
   }
